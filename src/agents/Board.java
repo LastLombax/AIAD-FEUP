@@ -1,9 +1,11 @@
 package agents;
 import java.util.Vector;
 
+import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 
 public class Board extends Agent {
 
@@ -16,26 +18,26 @@ public class Board extends Agent {
 
 	private int electionTracker = 0;
 	
-	private Vector<Agent> players;
-
-	public Board(Vector<Agent> pl) {
-		players = pl;
-		
-	}
 
 	public void setup() {
 		System.out.println("Hello world!");
+		
+		for(int i = 0; i < this.getArguments().length; i++) {
+			System.out.println(((AID) this.getArguments()[i]).getName());
+		}
+		addBehaviour(new SendMessageToPlayers());
 	}
 
-	public class SendMessageToPlayers extends Behaviour{
+	public class SendMessageToPlayers extends OneShotBehaviour{
 		public void action() {
-			System.out.println("here");
-		}
-
-		@Override
-		public boolean done() {
-			// TODO Auto-generated method stub
-			return false;
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			for(int i = 0; i < Board.this.getArguments().length; i++) {
+				msg.addReceiver((AID) Board.this.getArguments()[i]);
+			}
+			msg.setContent("WAZUP MY NIGGAS");
+			send(msg);
+			
+			done();
 		}
 		
 	}

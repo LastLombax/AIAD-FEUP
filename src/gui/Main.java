@@ -1,11 +1,9 @@
 package gui;
 
-import java.util.Vector;
-
-import agents.Board;
 import agents.Fascist;
+import agents.Hitler;
 import agents.Liberal;
-import jade.core.Agent;
+import jade.core.AID;
 import jade.core.Runtime;
 import jade.core.ProfileImpl;
 import jade.wrapper.AgentController;
@@ -21,22 +19,37 @@ public class Main {
 	public static void main(String[] args) throws StaleProxyException {
 		
 		int fascists = (int) Math.ceil(numberPlayers*0.4);
-		int liberals = (int) Math.ceil(numberPlayers*0.6);
 
 		
-		Vector<AgentController> players = new Vector<AgentController>();
+		AID[] players = new AID[numberPlayers];
+		
+		
 		
 		container = Runtime.instance().createMainContainer(new ProfileImpl());
 		
 		for (int i = 0; i < fascists; i++) {
-			AgentController agent = container.acceptNewAgent("Player_" + i, new Fascist());
+			Fascist f = new Fascist();
+			AgentController agent = container.acceptNewAgent("Player_" + i, f);
+			players[i] = f.getAID();	
 			agent.start();
 		}
 		
-		for (int i = fascists; i < numberPlayers; i++) {
-			AgentController agent = container.acceptNewAgent("Player_" + i, new Liberal());
+		for (int i = fascists; i < numberPlayers - 1; i++) {
+			Liberal l = new Liberal();
+			AgentController agent = container.acceptNewAgent("Player_" + i, l);
+			players[i] = l.getAID();	
 			agent.start();
 		}
+		
+		Hitler h = new Hitler();
+		AgentController agent = container.acceptNewAgent("Player_" + (numberPlayers - 1) , h);
+		players[numberPlayers-1] = h.getAID();	
+		agent.start();
+		
+		
+		AgentController board = container.createNewAgent("Board", "agents.Board", players);
+		board.start();
+		
 		
 	}
 
