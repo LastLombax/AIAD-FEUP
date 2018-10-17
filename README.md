@@ -66,3 +66,11 @@ O Agente que tiver o papel de Presidente terá de enviar as cartas que recebeu p
 ## Variáveis Dependentes
 
 ## Variáveis Independentes
+
+
+# Feedback 
+
+Começar por fazer o tabuleiro(agente)
+IMplementar algumas regras
+Meter jogadores(agentes) simples e tentar ver flow do jogo
+Guardar informações num ficheiro txt
