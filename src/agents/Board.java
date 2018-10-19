@@ -20,7 +20,6 @@ public class Board extends Agent {
 	
 
 	public void setup() {
-		System.out.println("Hello world!");
 		
 		for(int i = 0; i < this.getArguments().length; i++) {
 			System.out.println(((AID) this.getArguments()[i]).getName());

@@ -7,8 +7,8 @@ public class Liberal extends Player{
 	
 	public void setup() {
 		//super.setup();
-		System.out.print("But I am a Liberal!");
-		addBehaviour(new ReceivingMessages());
+		System.out.print("But I am a Liberal!\n");
+	//	addBehaviour(new ReceivingMessages());
 	}
 	
 	class ReceivingMessages extends Behaviour{
@@ -19,6 +19,7 @@ public class Liberal extends Player{
 			ACLMessage msg = receive();
 			System.out.println("AFTER RECEIVE...");
 			if(msg != null) {
+			System.out.println("hello there");
 				System.out.println(msg);
 				ACLMessage reply = msg.createReply();
 				reply.setPerformative(ACLMessage.INFORM);

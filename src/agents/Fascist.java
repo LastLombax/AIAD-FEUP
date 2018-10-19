@@ -7,8 +7,8 @@ public class Fascist extends Player{
 	
 	public void setup() {
 		//super.setup();
-		System.out.print("But I am a Fascist!");
-		addBehaviour(new ReceivingMessages());
+		System.out.print("But I am a Fascist!\n");
+	//	addBehaviour(new ReceivingMessages());
 	}
 	class ReceivingMessages extends CyclicBehaviour{
 
