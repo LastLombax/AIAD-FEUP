@@ -6,27 +6,33 @@ import jade.lang.acl.ACLMessage;
 public class Fascist extends Player{
 	
 	public void setup() {
-		//super.setup();
-		System.out.print("But I am a Fascist!\n");
-	//	addBehaviour(new ReceivingMessages());
+		super.setup();	
 	}
-	class ReceivingMessages extends CyclicBehaviour{
+	
+	public String selectCardToDiscard(String cards) {
+		System.out.println("Card fascist");
+		int countFascists = cards.length() - cards.replaceAll("F","").length();
+		int countLiberals = cards.length() - cards.replaceAll("L","").length();
+		if(countFascists == 3 || countLiberals == 3) 
+			cards = cards.substring(2);
 
-		@Override
-		public void action() {
-			ACLMessage msg = receive();
-			if(msg != null) {
-				System.out.println(msg);
-				ACLMessage reply = msg.createReply();
-				reply.setPerformative(ACLMessage.INFORM);
-				reply.setContent("U wot m8....");
-				send(reply);
-			} else {
-				block();
-			}
-			
-		}
+		else if (countFascists == 2 && countLiberals == 1)
+			cards = cards.replace("L_", "");
 		
+		else if (countLiberals == 2 && countFascists == 1) {
+			int indexF = cards.indexOf('L');
+			String aux = cards.substring(indexF, indexF + 2);
+			cards = cards.replaceFirst(aux, "");
+		}		
+
+		return cards;
+
 	}
+	
+	public int chooseChancellor() {
+		return -1;
+	}
+
+	public void selectCardToPass() {}
 
 }
