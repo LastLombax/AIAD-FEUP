@@ -6,6 +6,7 @@ import jade.core.Agent;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import utitilites.Utilities;
 
 public class Board extends Agent {
 
@@ -17,29 +18,62 @@ public class Board extends Agent {
 	private int currentChancellor;
 
 	private int electionTracker = 0;
-
+	
 	private AID[] players;
-
+	
+	private String[] cards = new String[17];
 
 	public void setup() {
 
-		this.players = (AID[]) this.getArguments();
-		System.out.println("Board");
-		for(int i = 0; i < players.length; i++) {
-			System.out.println((players[i]).getName());
-		}
-		//addBehaviour(new SendMessageToPlayers());
-		addBehaviour(new SetPresident());
+		createCards();
+		this.players = Utilities.players;
+		
+		//addBehaviour(new sendInfoToFascists());
 
+		
+		//addBehaviour(new SendMessageToPlayers());
+		//addBehaviour(new SetPresident());
+
+	}
+
+	private void createCards() {
+		int i;
+		for (i = 0; i < 6; i++)
+			cards[i] = "L_";
+		for (i = 6; i < 17; i++)
+			cards[i] = "F_";
+		Utilities.shuffleArray(cards);
+		
+	}
+
+	public class sendInfoToFascists extends OneShotBehaviour{
+		public void action() {
+			String fascists = "";
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			int i = 0;
+			for(; i < (int) Math.ceil(players.length*0.4) -1 ; i++) {
+				msg.addReceiver(players[i]);
+				fascists += i;
+			}
+			fascists += i;
+			System.out.println("fascists " + fascists);
+			msg.setOntology("Fascist");
+			msg.setContent(fascists);
+			send(msg);
+			
+			Utilities.shuffleArray(Utilities.players);
+			
+			done();
+		}
 	}
 
 	public class SendMessageToPlayers extends OneShotBehaviour{
 		public void action() {
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			for(int i = 0; i < Board.this.getArguments().length; i++) {
-				msg.addReceiver((AID) Board.this.getArguments()[i]);
+			for(int i = 0; i < players.length; i++) {
+				msg.addReceiver(players[i]);
 			}
-			msg.setContent("WAZUP MY NIGGAS");
+			msg.setContent("WAZUP");
 			send(msg);
 
 			done();

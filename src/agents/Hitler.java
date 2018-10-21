@@ -1,13 +1,15 @@
 package agents;
 
+import utitilites.Utilities;
+
 public class Hitler extends Player {
 	
 	public void setup() {
 		super.setup();
+		registerPlayers();
 	}
 	
 	public String selectCardToDiscard(String cards) {
-		System.out.println("Card hitler");
 		int countFascists = cards.length() - cards.replaceAll("F","").length();
 		int countLiberals = cards.length() - cards.replaceAll("L","").length();
 		if(countFascists == 3 || countLiberals == 3) 
@@ -25,6 +27,17 @@ public class Hitler extends Player {
 		return cards;
 
 	}
+	
+	public void registerPlayers() {
+		for (int i = 0; i < Utilities.players.length; i++)
+			getMap().put(Utilities.players[i], 0.0);
+
+	}
+	
+	public int chooseChancellor() {
+		return -1;
+	}
+
 
 	public void selectCardToPass() {}
 
