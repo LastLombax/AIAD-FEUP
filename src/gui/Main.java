@@ -10,21 +10,28 @@ import jade.core.ProfileImpl;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
-import utitilites.Utilities;
+import utilities.Utilities;
 
 public class Main {
 	
 	private static ContainerController container;
 	
-	private static int numberPlayers = 7;
 
 	public static void main(String[] args) throws StaleProxyException {
 		
-		int fascists = (int) Math.ceil(numberPlayers*0.4);
+		int fascists = (int) Math.ceil(Utilities.numberPlayers*0.4);
 
-		Utilities.players = new AID[numberPlayers];
+		Utilities.players = new AID[Utilities.numberPlayers];
 				
 		container = Runtime.instance().createMainContainer(new ProfileImpl());
+
+		Board b = new Board();
+		AgentController board = container.acceptNewAgent("Board", b);
+		board.start();	
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {e.printStackTrace();}
 		
 		for (int i = 0; i < fascists-1; i++) {
 			Fascist f = new Fascist();
@@ -38,15 +45,14 @@ public class Main {
 		Utilities.players[fascists-1] = h.getAID();	
 		agent.start();
 		
-		for (int i = fascists; i < numberPlayers; i++) {
+		for (int i = fascists; i < Utilities.numberPlayers; i++) {
 			Liberal l = new Liberal();
 			AgentController a = container.acceptNewAgent("Player_" + i, l);
 			Utilities.players[i] = l.getAID();	
 			a.start();
 		}
-		Board b = new Board();
-		AgentController board = container.acceptNewAgent("Board", b);
-		board.start();	
+		
+
 	}
 
 }

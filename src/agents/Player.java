@@ -5,16 +5,27 @@ import java.util.HashMap;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 
 public class Player extends Agent {
 	
     HashMap<AID, Double> map = new HashMap<AID, Double>();
+    
+    AID board;
 
 	public void setup() {
-		addBehaviour(new MessageFromBoard());
+		
+		addBehaviour(new sendBoardReady());
+		
+		//addBehaviour(new MessageFromBoard());
 	}
 	
+
 	class MessageFromBoard extends CyclicBehaviour{
 		@Override
 		public void action() {
@@ -23,7 +34,7 @@ public class Player extends Agent {
 				
 				switch(msg.getOntology()) {
 					case "President":
-						int chancellor = chooseChancellor();
+						AID chancellor = chooseChancellor();
 						System.out.println("Cards: " + msg.getContent());
 						String newCards = selectCardToDiscard(msg.getContent());
 						System.out.println("new cards: " + newCards);
@@ -39,11 +50,7 @@ public class Player extends Agent {
 					default:
 						break;					
 					}
-				System.out.println(msg);
-				ACLMessage reply = msg.createReply();
-				reply.setPerformative(ACLMessage.INFORM);
-				reply.setContent("U wot m8....");
-				send(reply);
+			
 			} else {
 				block();
 			}
@@ -52,10 +59,35 @@ public class Player extends Agent {
 		
 	}
 	
-	
-	public int chooseChancellor() {return -1;};
+	class sendBoardReady extends OneShotBehaviour{
+		@Override
+		public void action() {
+			getBoardFromDF();
+			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+			msg.addReceiver(board);
+			msg.setOntology("READY");
+			send(msg);
+		}
+		
+	}
 
-	public void sendCardsToChancellor(int chancellor) {};
+	private void getBoardFromDF() {
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("board");
+		template.addServices(sd);
+		try{
+			DFAgentDescription[] result = DFService.search(this, template);
+			for (int i = 0; i < result.length; i++)
+				board =  result[i].getName();
+			
+		} catch(FIPAException fe) {fe.printStackTrace();}
+	}
+
+	
+	public AID chooseChancellor() {return null;};
+
+	public void sendCardsToChancellor(AID chancellor) {};
 	
 	public HashMap<AID, Double> getMap(){
 		return map;

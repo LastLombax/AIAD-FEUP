@@ -1,6 +1,7 @@
 package agents;
 
-import utitilites.Utilities;
+import jade.core.AID;
+import utilities.Utilities;
 
 public class Hitler extends Player {
 	
@@ -34,8 +35,8 @@ public class Hitler extends Player {
 
 	}
 	
-	public int chooseChancellor() {
-		return -1;
+	public AID chooseChancellor() {
+		return null;
 	}
 
 

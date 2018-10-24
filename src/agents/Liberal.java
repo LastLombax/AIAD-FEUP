@@ -1,8 +1,7 @@
 package agents;
 
-import jade.core.behaviours.Behaviour;
-import jade.lang.acl.ACLMessage;
-import utitilites.Utilities;
+import jade.core.AID;
+import utilities.Utilities;
 
 public class Liberal extends Player{
 
@@ -35,8 +34,8 @@ public class Liberal extends Player{
 
 	}
 
-	public int chooseChancellor() {
-		return -1;
+	public AID chooseChancellor() {
+		return null;
 	}
 
 	public void selectCardToPass() {}

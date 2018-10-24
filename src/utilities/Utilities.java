@@ -1,15 +1,15 @@
-package utitilites;
+package utilities;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import jade.core.AID;
 
-import java.util.Arrays; 
 
 public class Utilities {
 	
 	public static AID[] players;
+	public static int numberPlayers = 7;
 
 	public static <T> void shuffleArray(T[] ar)
 	{
