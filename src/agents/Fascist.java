@@ -37,7 +37,6 @@ public class Fascist extends Player{
 	}
 
 	public void registerFascists(String fascists) {
-		System.out.println("registering");
 		for (int i = 0, n = fascists.length(); i < n; i++) {
 			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
 			getMap().put(Utilities.players[fas], 100.0);
@@ -50,35 +49,38 @@ public class Fascist extends Player{
 
 	public AID chooseChancellor() {
 
-		//request number of fascist policies from board
 		int fascistPolicies = 0; 
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(board);
 		msg.setOntology("Fascist_Policies");
 		send(msg);
-		ACLMessage answer = receive();
-		if(answer != null) {
-			if(answer.getOntology() == "Fascist_Policies") {
-				fascistPolicies = Integer.parseInt(answer.getContent());
-			}
-			else
-				System.out.println("Deu asneira");
-		}
-		else 
-			System.out.println("Deu muita asneira");
 
+		ACLMessage answer = receive();
+
+		while(true) {
+			answer = receive();
+			if (answer != null) {
+				if(answer.getOntology() == "Fascist_Policies") {
+					fascistPolicies = Integer.parseInt(answer.getContent());
+					break;
+				}
+				else
+					System.out.println("Wrong ontology: " + answer.getOntology());
+			}
+		}
+		
 		if (fascistPolicies >= 3) 
 			return hitler;
 
-		List<AID> listOfFas = null;
-		listOfFas = new ArrayList<>();
+		List<AID> listOfFas = new ArrayList<>();
 
 		for (Entry<AID, Double> entry : map.entrySet()) 
-			if (entry.getValue().equals(100.0))
+			if (entry.getValue().equals(100.0) && entry.getKey() != getAID())
 				listOfFas.add(entry.getKey());
 
-		int index = ThreadLocalRandom.current().nextInt(listOfFas.size()) % listOfFas.size();
-		
+	
+		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
+
 		return listOfFas.get(index);
 	}
 

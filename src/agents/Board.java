@@ -3,6 +3,7 @@ package agents;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
@@ -23,8 +24,6 @@ public class Board extends Agent {
 
 	private int electionTracker = 0;
 
-	private AID[] players;
-
 	private String[] cards = new String[17];
 
 	public void setup() {
@@ -40,47 +39,47 @@ public class Board extends Agent {
 		for (i = 6; i < 17; i++)
 			cards[i] = "F_";
 		Utilities.shuffleArray(cards);
-
 	}
 
-	public class sendInfoToFascists extends OneShotBehaviour {
-		public void action() {
-			String fascists = "";
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			int i = 0;
-			for (; i < (int) Math.ceil(players.length * 0.4) - 1; i++) {
-				msg.addReceiver(players[i]);
-				fascists += i;
-			}
+
+	public void sendInfoToFascists() {
+		String fascists = "";
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		int i = 0;
+		for (; i < (int) Math.ceil(Utilities.players.length * 0.4) - 1; i++) {
+			msg.addReceiver(Utilities.players[i]);
 			fascists += i;
-			System.out.println("fascists " + fascists);
-			msg.setOntology("Fascist");
-			msg.setContent(fascists);
-			send(msg);
-
-			Utilities.shuffleArray(Utilities.players);
-
-			done();
 		}
+		fascists += i;
+		msg.setOntology("Register_Fascist");
+		msg.setContent(fascists);
+		send(msg);
+
 	}
 
-	public class SetPresident extends OneShotBehaviour {
-		public void action() {
-			if (currentPresident == players.length - 1)
-				currentPresident = 0;
-			else
-				currentPresident++;
-			System.out.println("President " + players[currentPresident].getName());
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			msg.addReceiver(players[currentPresident]);
-			msg.setPerformative(ACLMessage.INFORM);
-			msg.setOntology("President");
-			msg.setContent(getCards());
-			send(msg);
-		}
+	private void sendInfoToRest() {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers ; i++)
+			msg.addReceiver(Utilities.players[i]);		
+		msg.setOntology("Register_Others");
+		send(msg);
 	}
 
-	
+	public void setPresident() {
+
+		if (currentPresident == Utilities.players.length - 1)
+			currentPresident = 0;
+		else
+			currentPresident++;
+		System.out.println("President " + Utilities.players[currentPresident].getLocalName());
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(Utilities.players[currentPresident]);
+		msg.setPerformative(ACLMessage.INFORM);
+		msg.setOntology("President");
+		msg.setContent(getCards());
+		send(msg);
+	}
+
 
 	public String getCards() {
 
@@ -90,65 +89,81 @@ public class Board extends Agent {
 	public void startGame() {
 		System.out.println("THE GAME HAS BEGUN");
 		createCards();
-		this.players = Utilities.players;
-		addBehaviour(new sendInfoToFascists());
-		addBehaviour(new SetPresident());
-
+		sendInfoToFascists();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {e.printStackTrace();}
+		Utilities.shuffleArray(Utilities.players);
+		sendInfoToRest();
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {e.printStackTrace();}
+		setPresident();
+		addBehaviour(new MessagesFromPlayers());
 	}
-	
+
+
 	class MessagesFromPlayers extends CyclicBehaviour{
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
-				
+				ACLMessage reply = null;
+				reply = msg.createReply();
+
 				switch(msg.getOntology()) {
-					case "Fascist_Policies":
-						ACLMessage reply = msg.createReply();
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology("Fascist_Policies");
-						reply.setContent(fascistPolicies + "");
-						send(reply);
-						break;
-					case "Chancellor":
-						break;
-					case "Fascist":
-						break;
-					default:
-						break;					
-					}
+				case "Fascist_Policies":
+					reply.setPerformative(ACLMessage.INFORM);
+					reply.setOntology("Fascist_Policies");
+					reply.setContent(fascistPolicies + "");
+					send(reply);
+					break;
+				case "Liberal_Policies":
+					reply.setPerformative(ACLMessage.INFORM);
+					reply.setOntology("Liberal_Policies");
+					reply.setContent(liberalPolicies + "");
+					send(reply);
+					break;
+				default:
+					break;					
+				}
 			} else {
 				block();
 			}
-			
+
 		}
-		
+
 	}
-	
-	class GameLoop extends CyclicBehaviour{
+
+	class GameLoop extends Behaviour{
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
-				
+
 				switch(msg.getOntology()) {
-					case "President":
-						break;
-					case "Chancellor":
-						break;
-					case "Fascist":
-						break;
-					default:
-						break;					
-					}
+				case "President":
+					break;
+				case "Chancellor":
+					break;
+				case "Fascist":
+					break;
+				default:
+					break;					
+				}
 			} else {
 				block();
 			}
-			
+
 		}
-		
+
+		@Override
+		public boolean done() {
+			return false;
+		}
+
 	}
-	
+
 
 	private void addToDF() {
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -164,23 +179,9 @@ public class Board extends Agent {
 		}
 	}
 
-	/*
-	 * Fascista escolhe fascista Hitler escolhe quem tem + prob de ser fascista
-	 * Liberal igual mas para liberal
-	 * 
-	 * Cada jogador tem associado uma probabilidade de os outros serem de uma certa
-	 * equipa
-	 * 
-	 *
-	 */
-	
-	public class checkPlayers extends CyclicBehaviour {
+	public class checkPlayers extends Behaviour {
 		public void action() {
 			ACLMessage msg = receive();
-			if (readyPlayers == Utilities.numberPlayers) {
-				startGame();
-				done();
-			}
 			if (msg != null) {
 				switch (msg.getOntology()) {
 				case "READY":
@@ -189,10 +190,18 @@ public class Board extends Agent {
 				default:
 					break;
 				}
-			} else {
-				block();
 			}
 		}
+
+		@Override
+		public boolean done() {
+			if (readyPlayers == Utilities.numberPlayers) {
+				startGame();
+				return true;
+			}
+			return false;
+		}
+
 	}
 
 }

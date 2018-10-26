@@ -11,54 +11,59 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import utilities.Utilities;
 
 public class Player extends Agent {
-	
-    HashMap<AID, Double> map = new HashMap<AID, Double>();
-    
-    AID board;
+
+	HashMap<AID, Double> map = new HashMap<AID, Double>();
+
+	AID board;
+
+	int index = 0;
 
 	public void setup() {
-		
+
 		addBehaviour(new sendBoardReady());
-		
-		//addBehaviour(new MessageFromBoard());
+		addBehaviour(new MessageFromBoard());
 	}
-	
+
 
 	class MessageFromBoard extends CyclicBehaviour{
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
-				
+
 				switch(msg.getOntology()) {
-					case "President":
-						AID chancellor = chooseChancellor();
-						System.out.println("Cards: " + msg.getContent());
-						String newCards = selectCardToDiscard(msg.getContent());
-						System.out.println("new cards: " + newCards);
-						sendCardsToChancellor(chancellor);
-						break;
-					case "Chancellor":
-						selectCardToPass();
-						break;
-					case "Fascist":
-						System.out.println("FASCIST");
-						registerFascists(msg.getContent());
-						break;
-					default:
-						break;					
-					}
-			
+				case "President":
+					AID chancellor = chooseChancellor();
+					System.out.println("chancellor " + chancellor.getLocalName());
+					System.out.println("Cards: " + msg.getContent());
+					String newCards = selectCardToDiscard(msg.getContent());
+					System.out.println("new cards: " + newCards);
+					sendCardsToChancellor(chancellor);
+					break;
+				case "Chancellor":
+					selectCardToPass();
+					break;
+				case "Register_Fascist":
+					registerFascists(msg.getContent());
+					break;
+				case "Register_Others":
+					registerOthers();
+					break;
+				default:
+					break;					
+				}
+
 			} else {
 				block();
 			}
-			
+
 		}
-		
+
 	}
-	
+
 	class sendBoardReady extends OneShotBehaviour{
 		@Override
 		public void action() {
@@ -68,7 +73,7 @@ public class Player extends Agent {
 			msg.setOntology("READY");
 			send(msg);
 		}
-		
+
 	}
 
 	private void getBoardFromDF() {
@@ -80,17 +85,30 @@ public class Player extends Agent {
 			DFAgentDescription[] result = DFService.search(this, template);
 			for (int i = 0; i < result.length; i++)
 				board =  result[i].getName();
-			
+
 		} catch(FIPAException fe) {fe.printStackTrace();}
 	}
 
-	
+
+	public void registerOthers() {};
+
+
 	public AID chooseChancellor() {return null;};
 
 	public void sendCardsToChancellor(AID chancellor) {};
-	
+
 	public HashMap<AID, Double> getMap(){
 		return map;
+	}
+
+	public int getIndex() {
+
+		for (int i = 0; i < Utilities.players.length; i++) {			
+			if (Utilities.players[i].equals(getAID()))
+				return i;
+		}
+		
+		return -1;
 	}
 
 	public void selectCardToPass() {};
