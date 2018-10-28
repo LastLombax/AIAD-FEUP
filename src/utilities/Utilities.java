@@ -10,7 +10,11 @@ public class Utilities {
 	
 	public static AID[] players;
 	public static int numberPlayers = 7;
-
+	
+	/**
+	 * Shuffles an array
+	 * @param ar Array of generic object T
+	 */
 	public static <T> void shuffleArray(T[] ar)
 	{
 		Random rnd = ThreadLocalRandom.current();

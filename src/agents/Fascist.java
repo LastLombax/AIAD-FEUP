@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
-
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
@@ -17,6 +16,7 @@ public class Fascist extends Player{
 		super.setup();	
 	}
 
+	
 	public String selectCardToDiscard(String cards) {
 		int countFascists = cards.length() - cards.replaceAll("F","").length();
 		int countLiberals = cards.length() - cards.replaceAll("L","").length();
@@ -31,11 +31,10 @@ public class Fascist extends Player{
 			String aux = cards.substring(indexF, indexF + 2);
 			cards = cards.replaceFirst(aux, "");
 		}		
-
 		return cards;
-
 	}
 
+	
 	public void registerFascists(String fascists) {
 		for (int i = 0, n = fascists.length(); i < n; i++) {
 			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
@@ -86,6 +85,22 @@ public class Fascist extends Player{
 
 
 
-	public void selectCardToPass() {}
+	public String selectCardToPass(String cards) {
+		int countFascists = cards.length() - cards.replaceAll("F","").length();
+		int countLiberals = cards.length() - cards.replaceAll("L","").length();
+		if(countFascists == 2 || countLiberals == 2) 
+			cards = cards.substring(2);
+
+		else if (countFascists == 2)
+			cards = cards.replace("L_", "");
+
+		else if (countLiberals == 1 && countFascists == 1) {
+			int indexF = cards.indexOf('L');
+			String aux = cards.substring(indexF, indexF + 2);
+			cards = cards.replaceFirst(aux, "");
+		}		
+
+		return cards;
+	}
 
 }

@@ -86,6 +86,22 @@ public class Hitler extends Player {
 	}	
 
 
-	public void selectCardToPass() {}
+	public String selectCardToPass(String cards) {
+		int countFascists = cards.length() - cards.replaceAll("F","").length();
+		int countLiberals = cards.length() - cards.replaceAll("L","").length();
+		if(countFascists == 2 || countLiberals == 2) 
+			cards = cards.substring(2);
+
+		else if (countFascists == 2)
+			cards = cards.replace("L_", "");
+
+		else if (countLiberals == 1 && countFascists == 1) {
+			int indexF = cards.indexOf('L');
+			String aux = cards.substring(indexF, indexF + 2);
+			cards = cards.replaceFirst(aux, "");
+		}		
+
+		return cards;
+	}
 
 }

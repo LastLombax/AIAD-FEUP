@@ -1,11 +1,9 @@
 package agents;
 
 
-import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -31,7 +29,9 @@ public class Board extends Agent {
 		addBehaviour(new checkPlayers());
 	}
 
-
+	/**
+	 * Creates the cards from the deck
+	 */
 	private void createCards() {
 		int i;
 		for (i = 0; i < 6; i++)
@@ -41,10 +41,13 @@ public class Board extends Agent {
 		Utilities.shuffleArray(cards);
 	}
 
-
+	/**
+	 * Sends request to all fascists to register who is a fascist.
+	 * Hitler does not hold this information
+	 */
 	public void sendInfoToFascists() {
 		String fascists = "";
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		int i = 0;
 		for (; i < (int) Math.ceil(Utilities.players.length * 0.4) - 1; i++) {
 			msg.addReceiver(Utilities.players[i]);
@@ -54,17 +57,22 @@ public class Board extends Agent {
 		msg.setOntology("Register_Fascist");
 		msg.setContent(fascists);
 		send(msg);
-
 	}
 
+	/**
+	 * Sends request to other players to register about the other players
+	 */
 	private void sendInfoToRest() {
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers ; i++)
 			msg.addReceiver(Utilities.players[i]);		
 		msg.setOntology("Register_Others");
 		send(msg);
 	}
 
+	/**
+	 * Sets the president of the turn
+	 */
 	public void setPresident() {
 
 		if (currentPresident == Utilities.players.length - 1)
@@ -81,11 +89,18 @@ public class Board extends Agent {
 	}
 
 
+	/**
+	 * Gets the top three cards from the deck
+	 * @return cards
+	 */
 	public String getCards() {
 
 		return "L_F_L_";
 	}
 
+	/**
+	 * Initiates the game after every agent is ready
+	 */
 	public void startGame() {
 		System.out.println("THE GAME HAS BEGUN");
 		createCards();
@@ -102,7 +117,9 @@ public class Board extends Agent {
 		addBehaviour(new MessagesFromPlayers());
 	}
 
-
+	/**
+	 * Class to manage all messages from players during the game
+	 */
 	class MessagesFromPlayers extends CyclicBehaviour{
 		@Override
 		public void action() {
@@ -135,6 +152,10 @@ public class Board extends Agent {
 
 	}
 
+	/**
+	 * Class for the Game Loop.
+	 * Each iteration is a turn, composed by: President and chancellor selection, election and policy choosing
+	 */
 	class GameLoop extends Behaviour{
 		@Override
 		public void action() {
@@ -164,7 +185,9 @@ public class Board extends Agent {
 
 	}
 
-
+	/**
+	 * Adds the Board Agent to the DF
+	 */
 	private void addToDF() {
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -179,6 +202,9 @@ public class Board extends Agent {
 		}
 	}
 
+	/**
+	 * Class to check if players are ready to start the game
+	 */
 	public class checkPlayers extends Behaviour {
 		public void action() {
 			ACLMessage msg = receive();

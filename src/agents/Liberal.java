@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
-
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
@@ -85,5 +84,28 @@ public class Liberal extends Player{
 	}
 
 
-	public void selectCardToPass() {}
+	public String selectCardToPass(String cards) {
+		int countFascists = cards.length() - cards.replaceAll("F","").length();
+		int countLiberals = cards.length() - cards.replaceAll("L","").length();
+		if(countFascists == 2 || countLiberals == 2) 
+			cards = cards.substring(1);
+
+		else if (countFascists == 1 && countLiberals == 1){
+			int indexF = cards.indexOf('F');
+			String aux = cards.substring(indexF, indexF + 2);
+			cards = cards.replaceFirst(aux, "");
+		}
+
+		else if (countLiberals == 2) 
+			cards = cards.replace("F_", "");
+
+		return cards;
+	}
+	
+	public Boolean voteForElection() {
+		return null;
+		
+		
+	}
+
 }

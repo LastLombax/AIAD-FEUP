@@ -27,7 +27,9 @@ public class Player extends Agent {
 		addBehaviour(new MessageFromBoard());
 	}
 
-
+	/**
+	 * Class to manage all messages from the Board during the game
+	 */
 	class MessageFromBoard extends CyclicBehaviour{
 		@Override
 		public void action() {
@@ -38,13 +40,19 @@ public class Player extends Agent {
 				case "President":
 					AID chancellor = chooseChancellor();
 					System.out.println("chancellor " + chancellor.getLocalName());
+					//send President and Chancellor to board so it can send to everyone to start election
 					System.out.println("Cards: " + msg.getContent());
 					String newCards = selectCardToDiscard(msg.getContent());
 					System.out.println("new cards: " + newCards);
-					sendCardsToChancellor(chancellor);
+					sendCardsToChancellor(chancellor, newCards);
+					break;
+				case "Election":
+					Boolean vote = voteForElection(msg.getContent());
+					sendVoteToBoard(vote);
 					break;
 				case "Chancellor":
-					selectCardToPass();
+					String selectedPolicy = selectCardToPass(msg.getContent());
+					System.out.println("Policy: " + selectedPolicy);
 					break;
 				case "Register_Fascist":
 					registerFascists(msg.getContent());
@@ -52,6 +60,7 @@ public class Player extends Agent {
 				case "Register_Others":
 					registerOthers();
 					break;
+				
 				default:
 					break;					
 				}
@@ -64,6 +73,9 @@ public class Player extends Agent {
 
 	}
 
+	/**
+	 * Class to send a READY message to Board to start the game
+	 */
 	class sendBoardReady extends OneShotBehaviour{
 		@Override
 		public void action() {
@@ -76,6 +88,9 @@ public class Player extends Agent {
 
 	}
 
+	/**
+	 * Searched the DF for the Board and saves it on @field Board
+	 */
 	private void getBoardFromDF() {
 		DFAgentDescription template = new DFAgentDescription();
 		ServiceDescription sd = new ServiceDescription();
@@ -89,32 +104,96 @@ public class Player extends Agent {
 		} catch(FIPAException fe) {fe.printStackTrace();}
 	}
 
-
-	public void registerOthers() {};
-
-
-	public AID chooseChancellor() {return null;};
-
-	public void sendCardsToChancellor(AID chancellor) {};
-
-	public HashMap<AID, Double> getMap(){
-		return map;
+	/**
+	 * Sends the election vote to the Board
+	 * @param vote Boolean that indicates whether the Players votes yes or no
+	 */
+	public void sendVoteToBoard(Boolean vote) {
+		ACLMessage msg = new ACLMessage();
+		if (vote)
+			msg.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+		else
+			msg.setPerformative(ACLMessage.REJECT_PROPOSAL);
+		msg.addReceiver(board);
+		send(msg);
+		
 	}
 
-	public int getIndex() {
+	/**
+	 * Sends cards for the chancellor to choose from
+	 * @param chancellor AID that represents the current Chancellor
+	 * @param cards String that contains two of the selected cards
+	 */
+	public void sendCardsToChancellor(AID chancellor, String cards) {
+		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+		msg.addReceiver(chancellor);
+		msg.setContent(cards);
+		msg.setOntology("Chancellor");
+		send(msg);
+	};
 
-		for (int i = 0; i < Utilities.players.length; i++) {			
+	
+	/**
+	 * Returns the index of the Agent from the array on Utilities.Utilities.java
+	 * @return position in the array
+	 */
+	public int getIndex() {
+		for (int i = 0; i < Utilities.players.length; i++) 		
 			if (Utilities.players[i].equals(getAID()))
 				return i;
-		}
 		
 		return -1;
 	}
+	
+	/**
+	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
+	 * @return map
+	 */
+	public HashMap<AID, Double> getMap(){
+		return map;
+	}
+	
+	
+	
+	//OVERRIDDEN METHODS
+	
+	/**
+	 * Player receives information of who is President and Chancellor and votes For or Against the election
+	 * @param string The President and the Chancellor 
+	 * @return
+	 */
+	public Boolean voteForElection(String string) {return null;};
 
-	public void selectCardToPass() {};
-
-	public String selectCardToDiscard(String cards) {return null;};
-
+	/**
+	 * Registers information about the fascists. Send to Fascists
+	 * @param fascists String that indicates who is a fascist and who is hitler
+	 */
 	public void registerFascists(String string) {};
+	
+	/**
+	 * Registers information about all players. Send to Liberals and Hitler
+	 */
+	public void registerOthers() {};
+
+	/**
+	 * Chooses the chancellor 
+	 * @return Returns the chosen chancellor
+	 */
+	public AID chooseChancellor() {return null;};
+
+	/**
+	 * Selects a card to be discarded
+	 * @param cards Cards to choose from
+	 * @return Two remaining cards
+	 */
+	public String selectCardToDiscard(String cards) {return null;};
+	
+	/**
+	 * Selects a card to be selected as the new Policy
+	 * @param cards Cards to choose from
+	 * @return Card that is the new policy
+	 */
+	public String selectCardToPass(String cards) {return null;};
+
 
 }
