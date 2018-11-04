@@ -14,6 +14,7 @@ import utilities.Utilities;
 public class Board extends Agent {
 
 	private int readyPlayers = 0;
+	
 	private int fascistPolicies = 0;
 	private int liberalPolicies = 0;
 
@@ -146,7 +147,6 @@ public class Board extends Agent {
 					send(reply);
 					break;
 				case "Election_Begin":
-					//Candidates c = new Candidates(msg.getContent());
 					addBehaviour(new Election(msg.getContent()));
 					break;
 				default:
@@ -169,7 +169,6 @@ public class Board extends Agent {
 	}
 
 	class Election extends Behaviour {
-
 
 		Election(String candidates){
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
@@ -202,43 +201,15 @@ public class Board extends Agent {
 
 		@Override
 		public boolean done() {
+
+			//setNewPolicy();
+		//	setPresident();
 			return false;
 		}
 
 	}
 
-	/**
-	 * Class for the Game Loop. Each iteration is a turn, composed by: President and
-	 * chancellor selection, election and policy choosing
-	 */
-	class GameLoop extends Behaviour {
-		@Override
-		public void action() {
-			ACLMessage msg = receive();
-			if (msg != null) {
 
-				switch (msg.getOntology()) {
-				case "President":
-					break;
-				case "Chancellor":
-					break;
-				case "Fascist":
-					break;
-				default:
-					break;
-				}
-			} else {
-				block();
-			}
-
-		}
-
-		@Override
-		public boolean done() {
-			return false;
-		}
-
-	}
 
 	/**
 	 * Adds the Board Agent to the DF
@@ -255,6 +226,11 @@ public class Board extends Agent {
 		} catch (FIPAException fe) {
 			fe.printStackTrace();
 		}
+	}
+
+	public void setNewPolicy() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

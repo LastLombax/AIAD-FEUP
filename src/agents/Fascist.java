@@ -2,6 +2,7 @@ package agents;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
@@ -12,13 +13,13 @@ import utilities.Utilities;
 public class Fascist extends Player{
 
 	public AID hitler;
-	
+
 	public void setup() {
 		super.setup();	
 		super.type = "fascist";
 	}
 
-	
+
 	public void registerFascists(String fascists) {
 		for (int i = 0, n = fascists.length(); i < n; i++) {
 			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
@@ -32,26 +33,8 @@ public class Fascist extends Player{
 
 	public AID chooseChancellor() {
 
-		int fascistPolicies = 0; 
-		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		msg.addReceiver(board);
-		msg.setOntology("Fascist_Policies");
-		send(msg);
+		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
 
-		ACLMessage answer = receive();
-
-		while(true) {
-			answer = receive();
-			if (answer != null) {
-				if(answer.getOntology() == "Fascist_Policies") {
-					fascistPolicies = Integer.parseInt(answer.getContent());
-					break;
-				}
-				else
-					System.out.println("Wrong ontology: " + answer.getOntology());
-			}
-		}
-		
 		if (fascistPolicies >= 3) 
 			return hitler;
 
@@ -61,7 +44,7 @@ public class Fascist extends Player{
 			if (entry.getValue().equals(100.0) && entry.getKey() != getAID())
 				listOfFas.add(entry.getKey());
 
-	
+
 		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
 
 		return listOfFas.get(index);
@@ -69,18 +52,31 @@ public class Fascist extends Player{
 
 
 
-	
-	/*public Boolean voteForElection(String candidates) {
-		
-		ArrayList<Double> players = Utilities.Map2ArraySorted(map);
-		
-				
-		for (Double temp : players) {
-			System.out.println(temp);
+
+	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
+		//both are fascists
+		if (presidentValue == 100 && chancellorValue == 100)
+			return true;
+
+		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
+		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
+
+		//president liberal and chancellor fascist
+		if (presidentValue == 0 && chancellorValue == 100) {
+			if (fascistPolicies - liberalPolicies >= 2)
+				return true;
+			return false;
 		}
-		
-		System.out.println("candidates: " + candidates);
-		return true;
-	};*/
+
+		//president fascist and chancellor liberal
+		if (presidentValue == 100 && chancellorValue == 0) {
+			if (fascistPolicies - liberalPolicies >= 1)
+				return true;
+			return false;
+		}
+
+		//president liberal and chancellor liberal
+		return false;
+	}
 
 }

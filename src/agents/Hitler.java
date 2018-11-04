@@ -1,7 +1,10 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -10,7 +13,7 @@ import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Hitler extends Player {
-	
+
 
 	public void setup() {
 		super.setup();
@@ -18,7 +21,7 @@ public class Hitler extends Player {
 
 	}
 
-	
+
 	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
 			getMap().put(Utilities.players[i], -1.0);
@@ -28,32 +31,16 @@ public class Hitler extends Player {
 	}
 
 	public AID chooseChancellor() {
-		int fascistPolicies = 0; 
-		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		msg.addReceiver(board);
-		msg.setOntology("Fascist_Policies");
-		send(msg);
-		ACLMessage answer = receive();
 
+		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies");
 
-		while(true) {
-			answer = receive();
-			if (answer != null) {
-				if(answer.getOntology() == "Fascist_Policies") {
-					fascistPolicies = Integer.parseInt(answer.getContent());
-					break;
-				}
-				else
-					System.out.println("Wrong ontology: " + answer.getOntology());
-			}
-		}
+		HashMap<AID, Double> listOfFas = new HashMap<AID, Double>();
 
-		List<AID> listOfFas = new ArrayList<>();
+		for (Entry<AID, Double> entry : map.entrySet())
+			if ((entry.getValue() >= 65 || entry.getValue() == -1 ) && entry.getKey() != getAID())
+				listOfFas.put(entry.getKey(), entry.getValue());
 
-		for (Entry<AID, Double> entry : map.entrySet()) 
-			if (entry.getValue().equals(70.0) && entry.getKey() != getAID())
-				listOfFas.add(entry.getKey());
-
+		int index = 0;
 
 		if (listOfFas.isEmpty()) {
 			int myIndex = getIndex();
@@ -65,17 +52,51 @@ public class Hitler extends Player {
 			return Utilities.players[index];
 		}
 
-		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
-
-		return listOfFas.get(index);
+		return Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
 
 
-	
-	public Boolean voteForElection(String candidates) {
+	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
 
-		//System.out.println("candidates: " + candidates);
-		return true;
-	};
+		//both are fascists or inconclusive
+		if ( (presidentValue >= 65 && chancellorValue >= 65 )
+				|| (presidentValue == -1 && chancellorValue == -1))
+			return true;
+
+		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
+		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
+
+
+		//president -1
+		if (presidentValue == -1) {
+			if (chancellorValue >= 65 && fascistPolicies - liberalPolicies >= 0)
+				return true;
+			return false;
+		}
+
+		//chancellor -1
+		if (chancellorValue == -1) {
+			if (presidentValue >= 65)
+				return true;
+			if (presidentValue < 65 && fascistPolicies - liberalPolicies >= 3)
+				return true;
+			return false;
+		}
+
+
+		//president liberal and chancellor fascist
+		if (presidentValue < 65 && chancellorValue >= 65) {
+			if (fascistPolicies - liberalPolicies >= 2)
+				return true;
+			return false;
+		}
+
+		//president fascist and chancellor liberal
+		if (presidentValue >= 65 && chancellorValue < 65)
+			return true;		
+
+		//both are liberals
+		return false;
+	}
 
 }

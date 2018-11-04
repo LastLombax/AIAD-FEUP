@@ -1,6 +1,7 @@
 package agents;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import jade.core.AID;
 import jade.core.Agent;
@@ -41,17 +42,17 @@ public class Player extends Agent {
 
 				switch(msg.getOntology()) {
 				case "President":
-					//AID chancellor = chooseChancellor();
-					//System.out.println("chancellor " + chancellor.getLocalName());
-					//send President and Chancellor to board so it can send to everyone to start election
-					//startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
-					System.out.println("Cards: " + msg.getContent());
+					AID chancellor = chooseChancellor();
+					System.out.println("chancellor " + chancellor.getLocalName());
+					startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+					/*	System.out.println("Cards: " + msg.getContent());
 					String newCards = selectCardToDiscard(msg.getContent());
 					System.out.println("new cards: " + newCards);
-					/*sendCardsToChancellor(chancellor, newCards);*/
+					sendCardsToChancellor(chancellor, newCards);*/
 					break;
 				case "Election":
 					Boolean vote = voteForElection(msg.getContent());
+					System.out.println(getAID().getLocalName() + " voted: " + vote);
 					//sendVoteToBoard(vote);
 					break;
 				case "Chancellor":
@@ -109,7 +110,6 @@ public class Player extends Agent {
 	}
 
 	public String getType() {
-
 		return type;
 	}
 
@@ -119,7 +119,6 @@ public class Player extends Agent {
 		msg.setOntology("Election_Begin");
 		msg.addReceiver(board);
 		send(msg);
-
 	}
 
 
@@ -181,7 +180,36 @@ public class Player extends Agent {
 	 * @param string The President and the Chancellor 
 	 * @return
 	 */
-	public Boolean voteForElection(String string) {return null;};
+	public Boolean voteForElection(String candidates) {
+
+		HashMap<AID, Double> sortedMap = (HashMap<AID, Double>) Utilities.sortByValue(map);
+
+		String[] cand = candidates.split(","); 
+
+		String president = cand[0];
+		String chancellor = cand[1];
+
+		Double presidentValue = 0.0, chancellorValue = 0.0;
+
+		for (Entry<AID, Double> entry : sortedMap.entrySet()) {
+		
+			if (entry.getKey().getLocalName().equals(president))	
+				presidentValue = entry.getValue();
+			if (entry.getKey().getLocalName().equals(chancellor))
+				chancellorValue = entry.getValue();		
+		}
+
+		if (getAID().getLocalName().equals(president) || getAID().getLocalName().equals(chancellor))
+			return true;
+		
+		
+		
+		return electionChoice(presidentValue, chancellorValue);
+	}
+
+	
+
+	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
 
 	/**
 	 * Registers information about the fascists. Send to Fascists
@@ -206,6 +234,7 @@ public class Player extends Agent {
 	 * @return Two remaining cards
 	 */
 	public String selectCardToDiscard(String cards) {
+		
 		int countFascists = cards.length() - cards.replaceAll("F","").length();
 		int countLiberals = cards.length() - cards.replaceAll("L","").length();
 		if(countFascists == 3 || countLiberals == 3) 
@@ -215,14 +244,14 @@ public class Player extends Agent {
 			if (getType().equals("fascist"))
 				cards = cards.replace("L_", "");
 			else 
-				replaceChar('F', cards);
+				cards = replaceChar('F', cards);
 
 		} 
 		else if (countLiberals == 2 && countFascists == 1) {
 			if (getType().equals("liberal"))
 				cards = cards.replace("F_", "");
 			else 
-				replaceChar('L', cards);
+				cards = replaceChar('L', cards);
 		}		
 		return cards;
 	}
@@ -254,5 +283,23 @@ public class Player extends Agent {
 		return cards.replaceFirst(aux, "");
 	}
 
+	public int getPoliciesFromBoard(String ontology) {
+		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+		msg.addReceiver(board);
+		msg.setOntology(ontology);
+		send(msg);
 
+		ACLMessage answer = null;
+		while(answer == null) {
+			answer = receive();
+			if (answer != null) {
+				if(answer.getOntology().equals(ontology))
+					return Integer.parseInt(answer.getContent());	
+				else
+					System.out.println("Wrong ontology: " + answer.getOntology());
+			}
+		}
+		return -1;
+	}
+	
 }
