@@ -1,6 +1,5 @@
 package agents;
 
-
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
@@ -9,6 +8,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import utilities.Candidates;
 import utilities.Utilities;
 
 public class Board extends Agent {
@@ -42,8 +42,8 @@ public class Board extends Agent {
 	}
 
 	/**
-	 * Sends request to all fascists to register who is a fascist.
-	 * Hitler does not hold this information
+	 * Sends request to all fascists to register who is a fascist. Hitler does not
+	 * hold this information
 	 */
 	public void sendInfoToFascists() {
 		String fascists = "";
@@ -64,8 +64,8 @@ public class Board extends Agent {
 	 */
 	private void sendInfoToRest() {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers ; i++)
-			msg.addReceiver(Utilities.players[i]);		
+		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers; i++)
+			msg.addReceiver(Utilities.players[i]);
 		msg.setOntology("Register_Others");
 		send(msg);
 	}
@@ -88,9 +88,9 @@ public class Board extends Agent {
 		send(msg);
 	}
 
-
 	/**
 	 * Gets the top three cards from the deck
+	 * 
 	 * @return cards
 	 */
 	public String getCards() {
@@ -107,12 +107,16 @@ public class Board extends Agent {
 		sendInfoToFascists();
 		try {
 			Thread.sleep(500);
-		} catch (InterruptedException e) {e.printStackTrace();}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		Utilities.shuffleArray(Utilities.players);
 		sendInfoToRest();
 		try {
 			Thread.sleep(500);
-		} catch (InterruptedException e) {e.printStackTrace();}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		setPresident();
 		addBehaviour(new MessagesFromPlayers());
 	}
@@ -120,15 +124,15 @@ public class Board extends Agent {
 	/**
 	 * Class to manage all messages from players during the game
 	 */
-	class MessagesFromPlayers extends CyclicBehaviour{
+	class MessagesFromPlayers extends CyclicBehaviour {
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
-			if(msg != null) {
+			if (msg != null) {
 				ACLMessage reply = null;
 				reply = msg.createReply();
 
-				switch(msg.getOntology()) {
+				switch (msg.getOntology()) {
 				case "Fascist_Policies":
 					reply.setPerformative(ACLMessage.INFORM);
 					reply.setOntology("Fascist_Policies");
@@ -141,9 +145,21 @@ public class Board extends Agent {
 					reply.setContent(liberalPolicies + "");
 					send(reply);
 					break;
+				case "Election_Begin":
+					//Candidates c = new Candidates(msg.getContent());
+					addBehaviour(new Election(msg.getContent()));
+					break;
 				default:
-					break;					
+					break;
 				}
+				/*switch(msg.getPerformative()) {
+				case ACLMessage.PROPOSE:
+					break;
+				case ACLMessage.ACCEPT_PROPOSAL:
+					break;
+				case ACLMessage.REJECT_PROPOSAL:
+					break;
+				}*/
 			} else {
 				block();
 			}
@@ -152,17 +168,23 @@ public class Board extends Agent {
 
 	}
 
-	/**
-	 * Class for the Game Loop.
-	 * Each iteration is a turn, composed by: President and chancellor selection, election and policy choosing
-	 */
-	class GameLoop extends Behaviour{
+	class Election extends Behaviour {
+
+
+		Election(String candidates){
+			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+			msg.setContent(candidates);
+			msg.setOntology("Election");
+			for (int i = 0; i < Utilities.players.length; i++)
+				msg.addReceiver(Utilities.players[i]);
+			send(msg);
+		}
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
-			if(msg != null) {
+			if (msg != null) {
 
-				switch(msg.getOntology()) {
+				switch (msg.getOntology()) {
 				case "President":
 					break;
 				case "Chancellor":
@@ -170,7 +192,40 @@ public class Board extends Agent {
 				case "Fascist":
 					break;
 				default:
-					break;					
+					break;
+				}
+			} else {
+				block();
+			}
+
+		}
+
+		@Override
+		public boolean done() {
+			return false;
+		}
+
+	}
+
+	/**
+	 * Class for the Game Loop. Each iteration is a turn, composed by: President and
+	 * chancellor selection, election and policy choosing
+	 */
+	class GameLoop extends Behaviour {
+		@Override
+		public void action() {
+			ACLMessage msg = receive();
+			if (msg != null) {
+
+				switch (msg.getOntology()) {
+				case "President":
+					break;
+				case "Chancellor":
+					break;
+				case "Fascist":
+					break;
+				default:
+					break;
 				}
 			} else {
 				block();

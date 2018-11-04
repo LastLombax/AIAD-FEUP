@@ -10,34 +10,19 @@ import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Hitler extends Player {
+	
 
 	public void setup() {
 		super.setup();
-	}
-
-	public String selectCardToDiscard(String cards) {
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 3 || countLiberals == 3) 
-			cards = cards.substring(2);
-
-		else if (countFascists == 2 && countLiberals == 1)
-			cards = cards.replace("L_", "");
-
-		else if (countLiberals == 2 && countFascists == 1) {
-			int indexF = cards.indexOf('L');
-			String aux = cards.substring(indexF, indexF + 2);
-			cards = cards.replaceFirst(aux, "");
-		}
-
-		return cards;
+		super.type = "fascist";
 
 	}
 
+	
 	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
-			getMap().put(Utilities.players[i], 0.0);
-		
+			getMap().put(Utilities.players[i], -1.0);
+
 		getMap().replace(Utilities.players[getIndex()],  100.0);
 
 	}
@@ -68,7 +53,7 @@ public class Hitler extends Player {
 		for (Entry<AID, Double> entry : map.entrySet()) 
 			if (entry.getValue().equals(70.0) && entry.getKey() != getAID())
 				listOfFas.add(entry.getKey());
-		
+
 
 		if (listOfFas.isEmpty()) {
 			int myIndex = getIndex();
@@ -86,22 +71,11 @@ public class Hitler extends Player {
 	}	
 
 
-	public String selectCardToPass(String cards) {
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 2 || countLiberals == 2) 
-			cards = cards.substring(2);
+	
+	public Boolean voteForElection(String candidates) {
 
-		else if (countFascists == 2)
-			cards = cards.replace("L_", "");
-
-		else if (countLiberals == 1 && countFascists == 1) {
-			int indexF = cards.indexOf('L');
-			String aux = cards.substring(indexF, indexF + 2);
-			cards = cards.replaceFirst(aux, "");
-		}		
-
-		return cards;
-	}
+		//System.out.println("candidates: " + candidates);
+		return true;
+	};
 
 }

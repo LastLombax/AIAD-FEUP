@@ -1,6 +1,7 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
@@ -11,27 +12,10 @@ import utilities.Utilities;
 public class Fascist extends Player{
 
 	public AID hitler;
-
+	
 	public void setup() {
 		super.setup();	
-	}
-
-	
-	public String selectCardToDiscard(String cards) {
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 3 || countLiberals == 3) 
-			cards = cards.substring(2);
-
-		else if (countFascists == 2 && countLiberals == 1)
-			cards = cards.replace("L_", "");
-
-		else if (countLiberals == 2 && countFascists == 1) {
-			int indexF = cards.indexOf('L');
-			String aux = cards.substring(indexF, indexF + 2);
-			cards = cards.replaceFirst(aux, "");
-		}		
-		return cards;
+		super.type = "fascist";
 	}
 
 	
@@ -85,22 +69,18 @@ public class Fascist extends Player{
 
 
 
-	public String selectCardToPass(String cards) {
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 2 || countLiberals == 2) 
-			cards = cards.substring(2);
-
-		else if (countFascists == 2)
-			cards = cards.replace("L_", "");
-
-		else if (countLiberals == 1 && countFascists == 1) {
-			int indexF = cards.indexOf('L');
-			String aux = cards.substring(indexF, indexF + 2);
-			cards = cards.replaceFirst(aux, "");
-		}		
-
-		return cards;
-	}
+	
+	/*public Boolean voteForElection(String candidates) {
+		
+		ArrayList<Double> players = Utilities.Map2ArraySorted(map);
+		
+				
+		for (Double temp : players) {
+			System.out.println(temp);
+		}
+		
+		System.out.println("candidates: " + candidates);
+		return true;
+	};*/
 
 }

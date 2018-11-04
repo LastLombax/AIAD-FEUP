@@ -1,6 +1,8 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
@@ -9,32 +11,17 @@ import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Liberal extends Player{
+	
 
 	public void setup() {
 		super.setup();
+		super.type = "liberal";
 	}
 
-	public String selectCardToDiscard(String cards) {
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 3 || countLiberals == 3) 
-			cards = cards.substring(2);
-
-		else if (countFascists == 2 && countLiberals == 1){
-			int indexF = cards.indexOf('F');
-			String aux = cards.substring(indexF, indexF + 2);
-			cards = cards.replaceFirst(aux, "");
-		}
-
-		else if (countLiberals == 2 && countFascists == 1) 
-			cards = cards.replace("F_", "");
-
-		return cards;
-	}
-
+	
 	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
-			getMap().put(Utilities.players[i], 0.0);
+			getMap().put(Utilities.players[i], -1.0);
 
 		getMap().replace(Utilities.players[getIndex()],  100.0);
 
@@ -84,28 +71,54 @@ public class Liberal extends Player{
 	}
 
 
-	public String selectCardToPass(String cards) {
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 2 || countLiberals == 2) 
-			cards = cards.substring(1);
-
-		else if (countFascists == 1 && countLiberals == 1){
-			int indexF = cards.indexOf('F');
-			String aux = cards.substring(indexF, indexF + 2);
-			cards = cards.replaceFirst(aux, "");
-		}
-
-		else if (countLiberals == 2) 
-			cards = cards.replace("F_", "");
-
-		return cards;
-	}
 	
-	public Boolean voteForElection() {
-		return null;
+
+	public Boolean voteForElection(String candidates) {
+/*		HashMap<AID, Double> sortedMap = (HashMap<AID, Double>) Utilities.sortByValue(map);
+
+		String[] cand = candidates.split(","); 
+
+		String president = cand[0];
+		String chancellor = cand[1];
 		
+		Double weight = 0.0;
+
+
+		for (Entry<AID, Double> entry : sortedMap.entrySet()) {
+			System.out.println(entry.getKey().getLocalName()+" : "+entry.getValue());
+			if (entry.getKey().getLocalName().equals(president)){
+				if (entry.getValue() == -1) 
+					weight = 1.0;
+				else if (entry.getValue() >= 60) 
+					vote = true;
+				else
+					vote = false;
+			}
+			if (entry.getKey().getLocalName().equals(chancellor)){
+				if (entry.getValue() == -1) 
+					weight = 1.0;
+				else if (entry.getValue() >= 60) 
+					vote = true;
+				else
+					vote = false;
+
+			}
+
+		}
 		
+		if (weight == 2)
+			return true;
+		
+
+
+		return true;
 	}
+
+	private boolean mapHasInitialValues(HashMap<AID, Double> sortedMap) {
+		int count = Collections.frequency(new ArrayList<Double>(sortedMap.values()), -1.0);
+
+		*/
+		return false;
+	};
 
 }
