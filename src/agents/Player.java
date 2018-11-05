@@ -13,6 +13,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
+import utilities.Utilities.State;
 
 public class Player extends Agent {
 
@@ -39,35 +40,60 @@ public class Player extends Agent {
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
+				switch (Utilities.currentState) {
+				case Setup:
+					switch(msg.getOntology()) {
+					case "Register_Fascist":
+						registerFascists(msg.getContent());
+						break;
+					case "Register_Others":
+						registerOthers();
+						break;
+					default:
+						break;
+					}
+					break;
 
-				switch(msg.getOntology()) {
-				case "President":
-					AID chancellor = chooseChancellor();
-					System.out.println("chancellor " + chancellor.getLocalName());
-					startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
-					/*	System.out.println("Cards: " + msg.getContent());
-					String newCards = selectCardToDiscard(msg.getContent());
-					System.out.println("new cards: " + newCards);
-					sendCardsToChancellor(chancellor, newCards);*/
+				case Ready:
+
 					break;
-				case "Election":
-					Boolean vote = voteForElection(msg.getContent());
-					System.out.println(getAID().getLocalName() + " voted: " + vote);
-					//sendVoteToBoard(vote);
+				case Delegation :
+					switch(msg.getOntology()) {
+					case "President":
+						AID chancellor = chooseChancellor();
+						System.out.println("chancellor " + chancellor.getLocalName());
+						startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+						/*	System.out.println("Cards: " + msg.getContent());
+						String newCards = selectCardToDiscard(msg.getContent());
+						System.out.println("new cards: " + newCards);
+						sendCardsToChancellor(chancellor, newCards);*/
+						break;						
+					case "Chancellor":
+						String selectedPolicy = selectCardToPass(msg.getContent());
+						System.out.println("Policy: " + selectedPolicy);	
+						sendPolicyToBoard(selectedPolicy);
+						break;
+
+					default:
+						break;					
+					}
 					break;
-				case "Chancellor":
-					String selectedPolicy = selectCardToPass(msg.getContent());
-					System.out.println("Policy: " + selectedPolicy);					
+				case Election :
+					switch(msg.getOntology()) {
+					case "Election":
+						Boolean vote = voteForElection(msg.getContent());
+						System.out.println(getAID().getLocalName() + " voted: " + vote);
+						sendVoteToBoard(vote);
+					default:
+						break;		
+					}
 					break;
-				case "Register_Fascist":
-					registerFascists(msg.getContent());
-					break;
-				case "Register_Others":
-					registerOthers();
+				case PolicySelection :
+					// Perform specific logic
 					break;
 
 				default:
-					break;					
+					break;
 				}
 
 			} else {
@@ -109,11 +135,23 @@ public class Player extends Agent {
 		} catch(FIPAException fe) {fe.printStackTrace();}
 	}
 
+	
+	
+	public void sendPolicyToBoard(String selectedPolicy) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(board);
+		msg.setOntology("SelectedPolicy");
+		msg.setContent(selectedPolicy);
+		send(msg);
+		
+	}
+
 	public String getType() {
 		return type;
 	}
 
 	public void startElection(String chancellor, String president) {
+		Utilities.currentState = State.Election;
 		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 		msg.setContent(president + "," + chancellor);
 		msg.setOntology("Election_Begin");
@@ -133,6 +171,7 @@ public class Player extends Agent {
 			msg.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
 		else
 			msg.setPerformative(ACLMessage.REJECT_PROPOSAL);
+		msg.setOntology("Election_Vote");
 		msg.addReceiver(board);
 		send(msg);
 
@@ -192,7 +231,7 @@ public class Player extends Agent {
 		Double presidentValue = 0.0, chancellorValue = 0.0;
 
 		for (Entry<AID, Double> entry : sortedMap.entrySet()) {
-		
+
 			if (entry.getKey().getLocalName().equals(president))	
 				presidentValue = entry.getValue();
 			if (entry.getKey().getLocalName().equals(chancellor))
@@ -201,13 +240,13 @@ public class Player extends Agent {
 
 		if (getAID().getLocalName().equals(president) || getAID().getLocalName().equals(chancellor))
 			return true;
-		
-		
-		
+
+
+
 		return electionChoice(presidentValue, chancellorValue);
 	}
 
-	
+
 
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
 
@@ -234,7 +273,7 @@ public class Player extends Agent {
 	 * @return Two remaining cards
 	 */
 	public String selectCardToDiscard(String cards) {
-		
+
 		int countFascists = cards.length() - cards.replaceAll("F","").length();
 		int countLiberals = cards.length() - cards.replaceAll("L","").length();
 		if(countFascists == 3 || countLiberals == 3) 
@@ -276,7 +315,7 @@ public class Player extends Agent {
 
 		return cards;
 	}
-	
+
 	public String replaceChar(char c, String cards) {
 		int index = cards.indexOf(c);
 		String aux = cards.substring(index, index + 2);
@@ -301,5 +340,5 @@ public class Player extends Agent {
 		}
 		return -1;
 	}
-	
+
 }

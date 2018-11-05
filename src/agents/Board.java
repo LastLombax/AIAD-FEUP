@@ -10,11 +10,12 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import utilities.Candidates;
 import utilities.Utilities;
+import utilities.Utilities.State;
 
 public class Board extends Agent {
 
 	private int readyPlayers = 0;
-	
+
 	private int fascistPolicies = 0;
 	private int liberalPolicies = 0;
 
@@ -118,6 +119,7 @@ public class Board extends Agent {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		Utilities.currentState = State.Delegation;
 		setPresident();
 		addBehaviour(new MessagesFromPlayers());
 	}
@@ -126,6 +128,8 @@ public class Board extends Agent {
 	 * Class to manage all messages from players during the game
 	 */
 	class MessagesFromPlayers extends CyclicBehaviour {
+
+		Election election = null;
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
@@ -133,33 +137,64 @@ public class Board extends Agent {
 				ACLMessage reply = null;
 				reply = msg.createReply();
 
-				switch (msg.getOntology()) {
-				case "Fascist_Policies":
-					reply.setPerformative(ACLMessage.INFORM);
-					reply.setOntology("Fascist_Policies");
-					reply.setContent(fascistPolicies + "");
-					send(reply);
+				switch (Utilities.currentState) {
+				case Setup:
 					break;
-				case "Liberal_Policies":
-					reply.setPerformative(ACLMessage.INFORM);
-					reply.setOntology("Liberal_Policies");
-					reply.setContent(liberalPolicies + "");
-					send(reply);
+
+				case Ready:
 					break;
-				case "Election_Begin":
-					addBehaviour(new Election(msg.getContent()));
+				case Delegation :
+
+					switch (msg.getOntology()) {
+					case "Fascist_Policies":
+						reply.setPerformative(ACLMessage.INFORM);
+						reply.setOntology("Fascist_Policies");
+						reply.setContent(fascistPolicies + "");
+						send(reply);
+						break;
+					case "Liberal_Policies":
+						reply.setPerformative(ACLMessage.INFORM);
+						reply.setOntology("Liberal_Policies");
+						reply.setContent(liberalPolicies + "");
+						send(reply);
+						break;
+					default:
+						break;
+					}
 					break;
+				case Election :
+					switch (msg.getOntology()) {
+					case "Fascist_Policies":
+						reply.setPerformative(ACLMessage.INFORM);
+						reply.setOntology("Fascist_Policies");
+						reply.setContent(fascistPolicies + "");
+						send(reply);
+						break;
+					case "Liberal_Policies":
+						reply.setPerformative(ACLMessage.INFORM);
+						reply.setOntology("Liberal_Policies");
+						reply.setContent(liberalPolicies + "");
+						send(reply);
+						break;
+					case "Election_Begin":
+						election = new Election(msg.getContent());
+						break;
+					case "Election_Vote":
+						if (election.action(msg)) 
+							Utilities.currentState = State.PolicySelection;
+						break;
+					default:
+						break;
+					}
+					break;
+				case PolicySelection :
+					// Perform specific logic
+					break;
+
 				default:
 					break;
 				}
-				/*switch(msg.getPerformative()) {
-				case ACLMessage.PROPOSE:
-					break;
-				case ACLMessage.ACCEPT_PROPOSAL:
-					break;
-				case ACLMessage.REJECT_PROPOSAL:
-					break;
-				}*/
+
 			} else {
 				block();
 			}
@@ -168,7 +203,10 @@ public class Board extends Agent {
 
 	}
 
-	class Election extends Behaviour {
+	class Election{
+
+		int ja = 0;
+		int nein = 0;
 
 		Election(String candidates){
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
@@ -178,34 +216,52 @@ public class Board extends Agent {
 				msg.addReceiver(Utilities.players[i]);
 			send(msg);
 		}
-		@Override
-		public void action() {
-			ACLMessage msg = receive();
-			if (msg != null) {
 
-				switch (msg.getOntology()) {
-				case "President":
-					break;
-				case "Chancellor":
-					break;
-				case "Fascist":
-					break;
-				default:
-					break;
-				}
-			} else {
-				block();
+		public boolean action(ACLMessage msg) {
+
+			if (checkEnd())
+				return true;
+
+			switch (msg.getPerformative()) {
+			case ACLMessage.ACCEPT_PROPOSAL:
+				ja++;
+				break;
+			case ACLMessage.REJECT_PROPOSAL:
+				nein++;
+				break;
+
+			default:
+				break;
 			}
+			if (checkEnd())
+				return true;
+
+			return false;
 
 		}
 
-		@Override
-		public boolean done() {
+		public boolean checkEnd() {
 
-			//setNewPolicy();
-		//	setPresident();
+			if (electionTracker == 3) {
+				electionTracker = 0;
+				return true;
+			}
+			System.out.println("ja: " + ja);
+			System.out.println("nein: " + nein);
+
+
+			if (ja + nein >= Utilities.numberPlayers) { //TODO CHANGE TO "==" WHEN VOTING BUG FIXED
+				if (ja > nein) {
+					System.out.println("The Election has passed");
+					return true;
+				}
+				System.out.println("The Election has been refused");
+				electionTracker++;
+				//setPresident();				
+			}
 			return false;
 		}
+
 
 	}
 
@@ -228,9 +284,15 @@ public class Board extends Agent {
 		}
 	}
 
+	
+	public void manageElection() {
+		// TODO Auto-generated method stub
+
+	}
+
 	public void setNewPolicy() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
