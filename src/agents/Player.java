@@ -1,6 +1,7 @@
 package agents;
 
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Map.Entry;
 
 import jade.core.AID;
@@ -29,7 +30,9 @@ public class Player extends Agent {
 
 
 	public void setup() {
-
+		Random random = new Random();
+		int r = random.nextInt(500);
+		this.doWait(r);
 		addBehaviour(new sendBoardReady());
 		addBehaviour(new MessageFromBoard());
 	}
@@ -130,6 +133,7 @@ public class Player extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 			msg.addReceiver(board);
 			msg.setOntology("READY");
+			System.out.append("");
 			send(msg);
 		}
 

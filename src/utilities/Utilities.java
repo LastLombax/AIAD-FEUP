@@ -20,7 +20,10 @@ public class Utilities {
 	
 	public static State currentState = State.Setup;
 
-
+	
+	public static String READY = "READY";
+	
+	
 	public static AID[] players;
 	public static int numberPlayers = 7;
 

@@ -29,7 +29,7 @@ public class Board extends Agent {
 
 	public void setup() {
 		addToDF();
-		addBehaviour(new checkPlayers());
+		addBehaviour(new MessagesFromPlayers());
 	}
 
 
@@ -63,48 +63,39 @@ public class Board extends Agent {
 	/**
 	 * Initiates the game after every agent is ready
 	 */
-	public void startGame() {
+	private void startGame() {
 		System.out.println("THE GAME HAS BEGUN");
 		createCards();
 		sendInfoToFascists();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		Utilities.shuffleArray(Utilities.players);
 		sendInfoToRest();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 		Utilities.currentState = State.Delegation;
 		setPresident();
-		addBehaviour(new MessagesFromPlayers());
 	}
-
+	
 	/**
 	 * Class to manage all messages from players during the game
 	 */
 	class MessagesFromPlayers extends CyclicBehaviour {
-
 		Election election = null;
 		@Override
 		public void action() {
+			System.out.println("Board waiting for messages");
 			ACLMessage msg = receive();
 			if (msg != null) {
+				System.out.println("Board received message: " + msg.getOntology());
 				ACLMessage reply = null;
 				reply = msg.createReply();
-
 				switch (Utilities.currentState) {
 				case Setup:
+					if(this.verifySetup(msg)) {
+						System.out.println("All players are ready!");
+						startGame();
+					}
 					break;
-
 				case Ready:
 					break;
 				case Delegation :
-
 					switch (msg.getOntology()) {
 					case "Fascist_Policies":
 						reply.setPerformative(ACLMessage.INFORM);
@@ -169,11 +160,19 @@ public class Board extends Agent {
 				}
 
 			} else {
+				System.out.println("Blocked");
 				block();
 			}
 
 		}
-
+		
+		private boolean verifySetup(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.READY)) {
+				readyPlayers++;
+			}
+			System.out.println("Players Confirmed: " + readyPlayers);
+			return (readyPlayers == Utilities.numberPlayers);
+		}
 	}
 
 	/**
@@ -313,35 +312,6 @@ public class Board extends Agent {
 			msg.addReceiver(Utilities.players[i]);
 		send(msg);
 	}
-
-	/**
-	 * Class to check if players are ready to start the game
-	 */
-	public class checkPlayers extends Behaviour {
-		public void action() {
-			ACLMessage msg = receive();
-			if (msg != null) {
-				switch (msg.getOntology()) {
-				case "READY":
-					readyPlayers++;
-					break;
-				default:
-					break;
-				}
-			}
-		}
-
-		@Override
-		public boolean done() {
-			if (readyPlayers == Utilities.numberPlayers) {
-				startGame();
-				return true;
-			}
-			return false;
-		}
-
-	}
-	
 
 	/**
 	 * Creates the cards from the deck

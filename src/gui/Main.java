@@ -29,10 +29,6 @@ public class Main {
 		AgentController board = container.acceptNewAgent("Board", b);
 		board.start();	
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {e.printStackTrace();}
-		
 		for (int i = 0; i < fascists-1; i++) {
 			Fascist f = new Fascist();
 			AgentController agent = container.acceptNewAgent("Player_" + i, f);
