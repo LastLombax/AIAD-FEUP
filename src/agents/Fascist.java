@@ -19,16 +19,18 @@ public class Fascist extends Player{
 		super.type = "fascist";
 	}
 
-
+	@Override
 	public void registerFascists(String fascists) {
 		for (int i = 0, n = fascists.length(); i < n; i++) {
 			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
 			getMap().put(Utilities.players[fas], 100.0);
+			System.out.println("Hey i'm a fascist: " + Utilities.players[fas].getName() );
 		}
 		hitler = Utilities.players[fascists.length()];
-		for (int i = fascists.length(); i < Utilities.players.length; i++)
+		for (int i = fascists.length(); i < Utilities.players.length; i++) {
 			getMap().put(Utilities.players[i], 0.0);
-
+			System.out.println("Hey i'm a liberal: " + Utilities.players[i].getName() );
+		}		
 	}
 
 	public AID chooseChancellor() {
@@ -82,5 +84,8 @@ public class Fascist extends Player{
 	public void updateInformation(String chancellorCards, String card) {
 		System.out.println("fascist updating stuff");
 	}
+	
+	
+	
 
 }

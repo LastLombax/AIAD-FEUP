@@ -25,7 +25,7 @@ public class Hitler extends Player {
 	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
 			getMap().put(Utilities.players[i], -1.0);
-
+		System.out.println("I'm hitler" + Utilities.players[getIndex()].getName());
 		getMap().replace(Utilities.players[getIndex()],  100.0);
 
 	}

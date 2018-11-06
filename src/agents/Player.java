@@ -18,7 +18,7 @@ import utilities.Utilities.State;
 
 public class Player extends Agent {
 
-	HashMap<AID, Double> map = new HashMap<AID, Double>();
+	HashMap<AID, Double> map = new HashMap<AID, Double>(); // double is the probability of being of the same faction
 
 	AID board;
 
@@ -41,7 +41,6 @@ public class Player extends Agent {
 	 * Class to manage all messages from the Board during the game
 	 */
 	class MessageFromBoard extends CyclicBehaviour{
-
 		AID chancellor = null;
 		@Override
 		public void action() {
@@ -49,33 +48,10 @@ public class Player extends Agent {
 			if(msg != null) {
 				switch (Utilities.currentState) {
 				case Setup:
-					switch(msg.getOntology()) {
-					case "Register_Fascist":
-						registerFascists(msg.getContent());
-						break;
-					case "Register_Others":
-						registerOthers();
-						break;
-					default:
-						break;
-					}
-					break;
-
-				case Ready:
-					//addBehaviour(new sendBoardReady());
-
+					this.dealSetup(msg);
 					break;
 				case Delegation :
-					switch(msg.getOntology()) {
-					case "President":
-						chancellor = chooseChancellor();
-						System.out.println("chancellor " + chancellor.getLocalName());
-						startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
-						break;						
-
-					default:
-						break;					
-					}
+					this.dealDelegation(msg);
 					break;
 				case Election :
 					switch(msg.getOntology()) {
@@ -120,6 +96,24 @@ public class Player extends Agent {
 			}
 
 		}
+		
+		private void dealSetup(ACLMessage msg){
+			if(msg.getOntology().equals(Utilities.REGISTER_FASCIST)) {
+				registerFascists(msg.getContent());
+			}
+			else if(msg.getOntology().equals(Utilities.REGISTER_OTHERS)) {
+				registerOthers();
+			}
+		}
+		
+		private void dealDelegation(ACLMessage msg) {
+				if(msg.getOntology().equals(Utilities.PRESIDENT)) {
+					chancellor = chooseChancellor();
+					System.out.println("Chancellor: " + chancellor.getLocalName());
+					startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+				}
+				
+		}
 
 	}
 
@@ -132,8 +126,7 @@ public class Player extends Agent {
 			getBoardFromDF();
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 			msg.addReceiver(board);
-			msg.setOntology("READY");
-			System.out.append("");
+			msg.setOntology(Utilities.READY);
 			send(msg);
 		}
 
@@ -334,7 +327,9 @@ public class Player extends Agent {
 	 * Registers information about the fascists. Send to Fascists
 	 * @param fascists String that indicates who is a fascist and who is hitler
 	 */
-	public void registerFascists(String string) {};
+	public void registerFascists(String string) {
+		
+	};
 
 	/**
 	 * Registers information about all players. Send to Liberals and Hitler

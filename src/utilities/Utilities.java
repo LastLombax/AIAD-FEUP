@@ -15,13 +15,16 @@ import jade.core.AID;
 public class Utilities {
 
 	public enum State {
-		Setup, Ready, Delegation, Election, PolicySelection;
+		Setup, Delegation, Election, PolicySelection;
 	}
 	
 	public static State currentState = State.Setup;
 
 	
 	public static String READY = "READY";
+	public static String REGISTER_FASCIST = "Register_Fascist";
+	public static String REGISTER_OTHERS = "Register_Others";
+	public static String PRESIDENT = "President";
 	
 	
 	public static AID[] players;

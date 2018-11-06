@@ -51,7 +51,7 @@ public class Board extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.addReceiver(Utilities.players[currentPresident]);
 		msg.setPerformative(ACLMessage.INFORM);
-		msg.setOntology("President");
+		msg.setOntology(Utilities.PRESIDENT);
 		send(msg);
 	}
 
@@ -107,8 +107,6 @@ public class Board extends Agent {
 						startGame();
 					}
 					break;
-				case Ready:
-					break;
 				case Delegation :
 					switch (msg.getOntology()) {
 					case "Fascist_Policies":
@@ -162,7 +160,6 @@ public class Board extends Agent {
 						setNewPolicy(msg.getContent());
 						break;
 					case "NextTurn":
-						Utilities.currentState = State.Ready;
 						//addBehaviour(new checkPlayers());
 						
 						break;
@@ -338,8 +335,7 @@ public class Board extends Agent {
 		for (i = 6; i < 17; i++)
 			cards[i] = "F";
 		Utilities.shuffleArray(cards);
-		
-		Random rnd = ThreadLocalRandom.current();
+	
 		for(i = 0; i < cards.length; i++) {
 			deck.add(cards[i]);
 		}
@@ -349,7 +345,7 @@ public class Board extends Agent {
 	 * Sends request to all fascists to register who is a fascist. Hitler does not
 	 * hold this information
 	 */
-	public void sendInfoToFascists() {
+	private void sendInfoToFascists() {
 		String fascists = "";
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		int i = 0;
@@ -358,7 +354,7 @@ public class Board extends Agent {
 			fascists += i;
 		}
 		fascists += i;
-		msg.setOntology("Register_Fascist");
+		msg.setOntology(Utilities.REGISTER_FASCIST);
 		msg.setContent(fascists);
 		send(msg);
 	}
@@ -370,7 +366,7 @@ public class Board extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers; i++)
 			msg.addReceiver(Utilities.players[i]);
-		msg.setOntology("Register_Others");
+		msg.setOntology(Utilities.REGISTER_OTHERS);
 		send(msg);
 	}
 	
