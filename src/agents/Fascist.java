@@ -78,5 +78,9 @@ public class Fascist extends Player{
 		//president liberal and chancellor liberal
 		return false;
 	}
+	
+	public void updateInformation(String chancellorCards, String card) {
+		System.out.println("fascist updating stuff");
+	}
 
 }

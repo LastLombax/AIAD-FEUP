@@ -98,5 +98,10 @@ public class Hitler extends Player {
 		//both are liberals
 		return false;
 	}
+	
+	public void updateInformation(String chancellorCards, String card) {
+		System.out.println("hitler updating stuff");
+	}
+
 
 }

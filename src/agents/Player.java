@@ -21,6 +21,8 @@ public class Player extends Agent {
 
 	AID board;
 
+	AID president, chancellor;
+
 	protected String type = null;
 
 	int index = 0;
@@ -36,6 +38,8 @@ public class Player extends Agent {
 	 * Class to manage all messages from the Board during the game
 	 */
 	class MessageFromBoard extends CyclicBehaviour{
+
+		AID chancellor = null;
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
@@ -55,24 +59,16 @@ public class Player extends Agent {
 					break;
 
 				case Ready:
+					//addBehaviour(new sendBoardReady());
 
 					break;
 				case Delegation :
 					switch(msg.getOntology()) {
 					case "President":
-						AID chancellor = chooseChancellor();
+						chancellor = chooseChancellor();
 						System.out.println("chancellor " + chancellor.getLocalName());
 						startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
-						/*	System.out.println("Cards: " + msg.getContent());
-						String newCards = selectCardToDiscard(msg.getContent());
-						System.out.println("new cards: " + newCards);
-						sendCardsToChancellor(chancellor, newCards);*/
 						break;						
-					case "Chancellor":
-						String selectedPolicy = selectCardToPass(msg.getContent());
-						System.out.println("Policy: " + selectedPolicy);	
-						sendPolicyToBoard(selectedPolicy);
-						break;
 
 					default:
 						break;					
@@ -89,9 +85,29 @@ public class Player extends Agent {
 					}
 					break;
 				case PolicySelection :
-					// Perform specific logic
-					break;
+					switch(msg.getOntology()) {
+					case "DiscardCard":
+						System.out.println("Cards: " + msg.getContent());
+						String newCards = selectCardToDiscard(msg.getContent());
+						System.out.println("new cards: " + newCards);
+						sendCardsToChancellor(chancellor, newCards);
+						break;
+					case "SelectFinalPolicy":
+						String selectedPolicy = selectCardToPass(msg.getContent());
+						System.out.println("New Policy: " + selectedPolicy);
+						sendPolicyToBoard(msg.getContent(), selectedPolicy);
+						break;
+					case "Delegacy":
+						updateDelegacy(msg.getContent());
+						break;
 
+					case "NewPolicy":
+						updateInformation(msg.getContent());
+						enterNextTurn();
+						break;
+					default:
+						break;		
+					}
 				default:
 					break;
 				}
@@ -135,21 +151,76 @@ public class Player extends Agent {
 		} catch(FIPAException fe) {fe.printStackTrace();}
 	}
 
-	
-	
-	public void sendPolicyToBoard(String selectedPolicy) {
+
+
+	public void enterNextTurn() {
+		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+		msg.addReceiver(board);
+		msg.setOntology("NextTurn");
+		send(msg);
+
+	}
+
+
+	/**
+	 * Updates information regarding who is the president and who is the chancellor
+	 * @param delegacy String received from the board
+	 */
+	public void updateDelegacy(String delegacy) {
+		String[] msgContent = delegacy.split(","); 
+		String pres = msgContent[0];
+		String chanc= msgContent[1];
+		for (int i = 0; i < Utilities.players.length; i++) {
+			if (Utilities.players[i].getLocalName().equals(pres))
+				president = Utilities.players[i];			
+			if (Utilities.players[i].getLocalName().equals(chanc))
+				chancellor = Utilities.players[i];
+		}
+
+	}
+
+
+	/**
+	 * Updates information using the new policy and the cards from the chancellor
+	 * @param content String that includes the new policy and the cards
+	 */
+	public void updateInformation(String content) {
+
+		String[] msgContent = content.split(","); 
+		String chancellorCards = msgContent[0];
+		String card = msgContent[1];
+
+		updateInformation(chancellorCards, card);
+
+	}
+
+	/**
+	 * Sends the policy chosen by the Chancellor to the board
+	 * @param cards
+	 * @param selectedPolicy
+	 */
+	public void sendPolicyToBoard(String cards, String selectedPolicy) {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.addReceiver(board);
 		msg.setOntology("SelectedPolicy");
-		msg.setContent(selectedPolicy);
+		msg.setContent(cards + "," + selectedPolicy);
 		send(msg);
-		
+
 	}
 
+	/**
+	 * Returns type of player
+	 * @return type
+	 */
 	public String getType() {
 		return type;
 	}
 
+	/**
+	 * Messages the Board to start the election
+	 * @param chancellor Name of the chancellor
+	 * @param president Name of the president
+	 */
 	public void startElection(String chancellor, String president) {
 		Utilities.currentState = State.Election;
 		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
@@ -158,7 +229,6 @@ public class Player extends Agent {
 		msg.addReceiver(board);
 		send(msg);
 	}
-
 
 
 	/**
@@ -186,7 +256,7 @@ public class Player extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 		msg.addReceiver(chancellor);
 		msg.setContent(cards);
-		msg.setOntology("Chancellor");
+		msg.setOntology("SelectFinalPolicy");
 		send(msg);
 	};
 
@@ -210,8 +280,6 @@ public class Player extends Agent {
 	public HashMap<AID, Double> getMap(){
 		return map;
 	}
-
-
 
 
 	/**
@@ -245,6 +313,14 @@ public class Player extends Agent {
 
 		return electionChoice(presidentValue, chancellorValue);
 	}
+
+
+	/**
+	 * Updates information about the chancellor
+	 * @param chancellorCards Cards that the chancellor received
+	 * @param card Card that was chosen by the chancellor
+	 */
+	public void updateInformation(String chancellorCards, String card) {};
 
 
 
@@ -283,14 +359,14 @@ public class Player extends Agent {
 			if (getType().equals("fascist"))
 				cards = cards.replace("L_", "");
 			else 
-				cards = replaceChar('F', cards);
+				cards = Utilities.replaceChar('F', cards);
 
 		} 
 		else if (countLiberals == 2 && countFascists == 1) {
 			if (getType().equals("liberal"))
 				cards = cards.replace("F_", "");
 			else 
-				cards = replaceChar('L', cards);
+				cards = Utilities.replaceChar('L', cards);
 		}		
 		return cards;
 	}
@@ -316,11 +392,6 @@ public class Player extends Agent {
 		return cards;
 	}
 
-	public String replaceChar(char c, String cards) {
-		int index = cards.indexOf(c);
-		String aux = cards.substring(index, index + 2);
-		return cards.replaceFirst(aux, "");
-	}
 
 	public int getPoliciesFromBoard(String ontology) {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);

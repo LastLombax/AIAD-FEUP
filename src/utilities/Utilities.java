@@ -1,10 +1,7 @@
 package utilities;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,7 +39,25 @@ public class Utilities {
 			ar[i] = a;
 		}	    
 	}
+	
 
+	/**
+	 * Removes a char in a string 
+	 * @param c Char
+	 * @param cards String
+	 * @return String without the char
+	 */
+	public static String replaceChar(char c, String cards) {
+		int index = cards.indexOf(c);
+		String aux = cards.substring(index, index + 2);
+		return cards.replaceFirst(aux, "");
+	}
+
+	/**
+	 * Sorts map by value
+	 * @param map Map
+	 * @return Returns map sorted
+	 */
 	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map)
 	{
 		List<Map.Entry<K, V>> list = new LinkedList<Map.Entry<K, V>>(map.entrySet());

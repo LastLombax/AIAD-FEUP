@@ -100,5 +100,10 @@ public class Liberal extends Player{
 		//both are fascists
 		return false;
 	}
+	
+	public void updateInformation(String chancellorCards, String card) {
+		System.out.println("liberal updating stuff");
+	}
+
 
 }
