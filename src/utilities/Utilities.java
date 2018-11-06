@@ -39,19 +39,6 @@ public class Utilities {
 			ar[i] = a;
 		}	    
 	}
-	
-
-	/**
-	 * Removes a char in a string 
-	 * @param c Char
-	 * @param cards String
-	 * @return String without the char
-	 */
-	public static String replaceChar(char c, String cards) {
-		int index = cards.indexOf(c);
-		String aux = cards.substring(index, index + 2);
-		return cards.replaceFirst(aux, "");
-	}
 
 	/**
 	 * Sorts map by value
