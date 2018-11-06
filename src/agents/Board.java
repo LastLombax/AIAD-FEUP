@@ -1,5 +1,10 @@
 package agents;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -24,9 +29,9 @@ public class Board extends Agent {
 
 	private int electionTracker = 0;
 
-	private String[] cards = new String[17];
-
-
+	Queue<String> deck = new LinkedList<>();
+	String cardsInPlay;
+	
 	public void setup() {
 		addToDF();
 		addBehaviour(new MessagesFromPlayers());
@@ -56,8 +61,17 @@ public class Board extends Agent {
 	 * @return cards
 	 */
 	public String getCards() {
-
-		return "L_F_L_";
+		cardsInPlay = deck.poll() + deck.poll() + deck.poll();
+		return cardsInPlay;
+	}
+	
+	/**
+	 * Returns discarded cards to back of deck queue
+	 * @param discarded string representing the two discarded cards
+	 */
+	public void returnDiscardedCards(String discarded) {
+		deck.add(discarded.substring(0, 1));
+		deck.add(discarded.substring(1));
 	}
 
 	/**
@@ -300,11 +314,11 @@ public class Board extends Agent {
 
 		String[] msgContent = content.split(","); 
 		String card = msgContent[1];
-		if (card.equals("F_"))
+		if (card.equals("F"))
 			fascistPolicies++;
-		else if (card.equals("L_"))
+		else if (card.equals("L"))
 			liberalPolicies++;
-		
+		returnDiscardedCards(cardsInPlay.replaceFirst(card, ""));
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(content);
 		msg.setOntology("NewPolicy");
@@ -317,12 +331,18 @@ public class Board extends Agent {
 	 * Creates the cards from the deck
 	 */
 	private void createCards() {
+		String[] cards = new String[17];
 		int i;
 		for (i = 0; i < 6; i++)
-			cards[i] = "L_";
+			cards[i] = "L";
 		for (i = 6; i < 17; i++)
-			cards[i] = "F_";
+			cards[i] = "F";
 		Utilities.shuffleArray(cards);
+		
+		Random rnd = ThreadLocalRandom.current();
+		for(i = 0; i < cards.length; i++) {
+			deck.add(cards[i]);
+		}
 	}
 
 	/**

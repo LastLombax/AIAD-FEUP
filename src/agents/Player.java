@@ -346,32 +346,22 @@ public class Player extends Agent {
 	 * @return Returns the chosen chancellor
 	 */
 	public AID chooseChancellor() {return null;};
-
+	
 	/**
 	 * Selects a card to be discarded by the President
 	 * @param cards Cards to choose from
 	 * @return Two remaining cards
 	 */
 	public String selectCardToDiscard(String cards) {
-
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 3 || countLiberals == 3) 
-			cards = cards.substring(2);
-
-		else if (countFascists == 2 && countLiberals == 1) {
-			if (getType().equals("fascist"))
-				cards = cards.replace("L_", "");
-			else 
-				cards = Utilities.replaceChar('F', cards);
-
-		} 
-		else if (countLiberals == 2 && countFascists == 1) {
-			if (getType().equals("liberal"))
-				cards = cards.replace("F_", "");
-			else 
-				cards = Utilities.replaceChar('L', cards);
-		}		
+		if(cards.indexOf("F") == -1 || cards.indexOf("L") == -1) {
+			cards = cards.substring(1);
+		}
+		else if (getType().equals("fascist")) {
+			cards = cards.replaceFirst("L", "");
+		}
+		else {
+			cards = cards.replaceFirst("F", "");
+		}
 		return cards;
 	}
 
@@ -380,19 +370,14 @@ public class Player extends Agent {
 	 * @param cards Cards to choose from
 	 * @return Card that is the new policy
 	 */
-	public String selectCardToPass(String cards) {  
-		int countFascists = cards.length() - cards.replaceAll("F","").length();
-		int countLiberals = cards.length() - cards.replaceAll("L","").length();
-		if(countFascists == 2 || countLiberals == 2) 
-			cards = cards.substring(2);
-
-		else if (countFascists == 1) {
-			if (getType().equals("fascist"))
-				cards = cards.replace("L_", "");
-			else
-				cards = cards.replace("F_", "");
-		}
-
+	public String selectCardToPass(String cards) { 
+			if(cards.indexOf("F") == -1 || cards.indexOf("L") == -1) {
+				cards = cards.substring(1);
+			}
+			else if(getType().equals("fascist"))
+				cards = cards.replace("L", "");
+			else 
+				cards = cards.replace("F", "");
 		return cards;
 	}
 
