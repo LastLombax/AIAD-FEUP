@@ -3,7 +3,6 @@ package agents;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Map.Entry;
-
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -59,6 +58,11 @@ public class Player extends Agent {
 						Boolean vote = voteForElection(msg.getContent());
 						System.out.println(getAID().getLocalName() + " voted: " + vote);
 						sendVoteToBoard(vote);
+						break;
+					case "NewPolicyElection":
+						updateInformation(msg.getContent());
+						enterNextTurn();
+						break;
 					default:
 						break;		
 					}
@@ -96,7 +100,7 @@ public class Player extends Agent {
 			}
 
 		}
-		
+
 		private void dealSetup(ACLMessage msg){
 			if(msg.getOntology().equals(Utilities.REGISTER_FASCIST)) {
 				registerFascists(msg.getContent());
@@ -105,14 +109,14 @@ public class Player extends Agent {
 				registerOthers();
 			}
 		}
-		
+
 		private void dealDelegation(ACLMessage msg) {
-				if(msg.getOntology().equals(Utilities.PRESIDENT)) {
-					chancellor = chooseChancellor();
-					System.out.println("Chancellor: " + chancellor.getLocalName());
-					startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
-				}
-				
+			if(msg.getOntology().equals(Utilities.PRESIDENT)) {
+				chancellor = chooseChancellor();
+				System.out.println("Chancellor: " + chancellor.getLocalName());
+				startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+			}
+
 		}
 
 	}
@@ -131,23 +135,6 @@ public class Player extends Agent {
 		}
 
 	}
-
-	/**
-	 * Searched the DF for the Board and saves it on @field Board
-	 */
-	private void getBoardFromDF() {
-		DFAgentDescription template = new DFAgentDescription();
-		ServiceDescription sd = new ServiceDescription();
-		sd.setType("board");
-		template.addServices(sd);
-		try{
-			DFAgentDescription[] result = DFService.search(this, template);
-			for (int i = 0; i < result.length; i++)
-				board =  result[i].getName();
-
-		} catch(FIPAException fe) {fe.printStackTrace();}
-	}
-
 
 
 	public void enterNextTurn() {
@@ -205,13 +192,7 @@ public class Player extends Agent {
 
 	}
 
-	/**
-	 * Returns type of player
-	 * @return type
-	 */
-	public String getType() {
-		return type;
-	}
+	
 
 	/**
 	 * Messages the Board to start the election
@@ -258,26 +239,6 @@ public class Player extends Agent {
 	};
 
 
-	/**
-	 * Returns the index of the Agent from the array on Utilities.Utilities.java
-	 * @return position in the array
-	 */
-	public int getIndex() {
-		for (int i = 0; i < Utilities.players.length; i++) 		
-			if (Utilities.players[i].equals(getAID()))
-				return i;
-
-		return -1;
-	}
-
-	/**
-	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
-	 * @return map
-	 */
-	public HashMap<AID, Double> getMap(){
-		return map;
-	}
-
 
 	/**
 	 * Player receives information of who is President and Chancellor and votes For or Against the election
@@ -312,36 +273,24 @@ public class Player extends Agent {
 	}
 
 
-	/**
-	 * Updates information about the chancellor
-	 * @param chancellorCards Cards that the chancellor received
-	 * @param card Card that was chosen by the chancellor
-	 */
-	public void updateInformation(String chancellorCards, String card) {};
-
-
-
-	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
 
 	/**
-	 * Registers information about the fascists. Send to Fascists
-	 * @param fascists String that indicates who is a fascist and who is hitler
+	 * Selects a card to be selected as the new Policy by the Chancellor
+	 * @param cards Cards to choose from
+	 * @return Card that is the new policy
 	 */
-	public void registerFascists(String string) {
-		
-	};
+	public String selectCardToPass(String cards) { 
+		if(cards.indexOf("F") == -1 || cards.indexOf("L") == -1) {
+			cards = cards.substring(1);
+		}
+		else if(getType().equals("fascist"))
+			cards = cards.replace("L", "");
+		else 
+			cards = cards.replace("F", "");
+		return cards;
+	}
 
-	/**
-	 * Registers information about all players. Send to Liberals and Hitler
-	 */
-	public void registerOthers() {};
 
-	/**
-	 * Chooses the chancellor 
-	 * @return Returns the chosen chancellor
-	 */
-	public AID chooseChancellor() {return null;};
-	
 	/**
 	 * Selects a card to be discarded by the President
 	 * @param cards Cards to choose from
@@ -360,23 +309,12 @@ public class Player extends Agent {
 		return cards;
 	}
 
+
 	/**
-	 * Selects a card to be selected as the new Policy by the Chancellor
-	 * @param cards Cards to choose from
-	 * @return Card that is the new policy
+	 * Asks the Board for the number of passed policies of a specified faction
+	 * @param ontology Specifies faction on the message
+	 * @return Number of passed policies
 	 */
-	public String selectCardToPass(String cards) { 
-			if(cards.indexOf("F") == -1 || cards.indexOf("L") == -1) {
-				cards = cards.substring(1);
-			}
-			else if(getType().equals("fascist"))
-				cards = cards.replace("L", "");
-			else 
-				cards = cards.replace("F", "");
-		return cards;
-	}
-
-
 	public int getPoliciesFromBoard(String ontology) {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(board);
@@ -395,5 +333,89 @@ public class Player extends Agent {
 		}
 		return -1;
 	}
+	
+	
+
+	/**
+	 * Searched the DF for the Board and saves it on @field Board
+	 */
+	private void getBoardFromDF() {
+		DFAgentDescription template = new DFAgentDescription();
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType("board");
+		template.addServices(sd);
+		try{
+			DFAgentDescription[] result = DFService.search(this, template);
+			for (int i = 0; i < result.length; i++)
+				board =  result[i].getName();
+
+		} catch(FIPAException fe) {fe.printStackTrace();}
+	}
+
+
+	/**
+	 * Returns the index of the Agent from the array on Utilities.Utilities.java
+	 * @return position in the array
+	 */
+	public int getIndex() {
+		for (int i = 0; i < Utilities.players.length; i++) 		
+			if (Utilities.players[i].equals(getAID()))
+				return i;
+
+		return -1;
+	}
+
+	/**
+	 * Returns type of player
+	 * @return type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
+	 * @return map
+	 */
+	public HashMap<AID, Double> getMap(){
+		return map;
+	}
+
+
+	//OVERRIDEN METHODS
+
+	/**
+	 * Updates information about the chancellor
+	 * @param chancellorCards Cards that the chancellor received
+	 * @param card Card that was chosen by the chancellor
+	 */
+	public void updateInformation(String chancellorCards, String card) {};
+
+
+	/**
+	 * Each player decides on voting Yes or No on the election, depending on the information
+	 * they have
+	 * @param presidentValue Percentage of the President belonging into the Player's faction
+	 * @param chancellorValue Percentage of the Chancellor belonging into the Player's faction
+	 * @return
+	 */
+	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
+
+	/**
+	 * Registers information about the fascists. Send to Fascists
+	 * @param fascists String that indicates who is a fascist and who is hitler
+	 */
+	public void registerFascists(String string) {};
+
+	/**
+	 * Registers information about all players. Send to Liberals and Hitler
+	 */
+	public void registerOthers() {};
+
+	/**
+	 * Chooses the chancellor 
+	 * @return Returns the chosen chancellor
+	 */
+	public AID chooseChancellor() {return null;};
 
 }

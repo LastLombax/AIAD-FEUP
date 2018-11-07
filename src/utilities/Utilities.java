@@ -14,9 +14,14 @@ import jade.core.AID;
 
 public class Utilities {
 
+	/**
+	 * Enum that represents the state/phase of the game
+	 */
 	public enum State {
 		Setup, Delegation, Election, PolicySelection;
 	}
+
+	
 	
 	public static State currentState = State.Setup;
 
@@ -25,10 +30,22 @@ public class Utilities {
 	public static String REGISTER_FASCIST = "Register_Fascist";
 	public static String REGISTER_OTHERS = "Register_Others";
 	public static String PRESIDENT = "President";
-	
-	
+	public static String DELEGACY = "Delegacy";
+	public static String ELECTION = "Election";
+	public static String NEW_POLICY = "NewPolicy";
+	public static String DISCARD_CARD= "DiscardCard";
+	public static String NEW_POLICY_ELECTION = "NewPolicyElection";
+
 	public static AID[] players;
 	public static int numberPlayers = 7;
+
+
+	public static String FASCIST_POLICIES = "Fascist_Policies";
+	public static String LIBERAL_POLICIES = "Liberal_Policies";
+
+
+
+
 
 	/**
 	 * Shuffles an array

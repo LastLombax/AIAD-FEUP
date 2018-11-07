@@ -2,12 +2,7 @@ package agents;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
-import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -31,7 +26,7 @@ public class Board extends Agent {
 
 	Queue<String> deck = new LinkedList<>();
 	String cardsInPlay;
-	
+
 	public void setup() {
 		addToDF();
 		addBehaviour(new MessagesFromPlayers());
@@ -64,7 +59,7 @@ public class Board extends Agent {
 		cardsInPlay = deck.poll() + deck.poll() + deck.poll();
 		return cardsInPlay;
 	}
-	
+
 	/**
 	 * Returns discarded cards to back of deck queue
 	 * @param discarded string representing the two discarded cards
@@ -83,10 +78,22 @@ public class Board extends Agent {
 		sendInfoToFascists();
 		Utilities.shuffleArray(Utilities.players);
 		sendInfoToRest();
+		startDelegacy();
+	}
+
+	/**
+	 * Begins delegacy by changing the state and setting the president
+	 */
+	private void startDelegacy() {
+		
+		System.out.println("Fascist Policies: " + fascistPolicies);
+		System.out.println("Liberal Policies: " + liberalPolicies);
+		
 		Utilities.currentState = State.Delegation;
 		setPresident();
+
 	}
-	
+
 	/**
 	 * Class to manage all messages from players during the game
 	 */
@@ -94,30 +101,26 @@ public class Board extends Agent {
 		Election election = null;
 		@Override
 		public void action() {
-			System.out.println("Board waiting for messages");
 			ACLMessage msg = receive();
 			if (msg != null) {
-				System.out.println("Board received message: " + msg.getOntology());
 				ACLMessage reply = null;
 				reply = msg.createReply();
 				switch (Utilities.currentState) {
 				case Setup:
-					if(this.verifySetup(msg)) {
-						System.out.println("All players are ready!");
+					if(this.verifySetup(msg)) 
 						startGame();
-					}
 					break;
 				case Delegation :
 					switch (msg.getOntology()) {
 					case "Fascist_Policies":
 						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology("Fascist_Policies");
+						reply.setOntology(Utilities.FASCIST_POLICIES);
 						reply.setContent(fascistPolicies + "");
 						send(reply);
 						break;
 					case "Liberal_Policies":
 						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology("Liberal_Policies");
+						reply.setOntology(Utilities.LIBERAL_POLICIES);
 						reply.setContent(liberalPolicies + "");
 						send(reply);
 						break;
@@ -129,13 +132,13 @@ public class Board extends Agent {
 					switch (msg.getOntology()) {
 					case "Fascist_Policies":
 						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology("Fascist_Policies");
+						reply.setOntology(Utilities.FASCIST_POLICIES);
 						reply.setContent(fascistPolicies + "");
 						send(reply);
 						break;
 					case "Liberal_Policies":
 						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology("Liberal_Policies");
+						reply.setOntology(Utilities.LIBERAL_POLICIES);
 						reply.setContent(liberalPolicies + "");
 						send(reply);
 						break;
@@ -143,17 +146,13 @@ public class Board extends Agent {
 						election = new Election(msg.getContent());
 						break;
 					case "Election_Vote":
-						if (election.action(msg)){
-							Utilities.currentState = State.PolicySelection;
-							informPlayersOfDelegacy();
-							sendCardsToPresident();
-						}
+						election.verifyElection(msg);
 						break;
 					default:
 						break;
 					}
 					break;
-					
+
 				case PolicySelection :
 					switch (msg.getOntology()) {
 					case "SelectedPolicy":
@@ -161,7 +160,7 @@ public class Board extends Agent {
 						break;
 					case "NextTurn":
 						//addBehaviour(new checkPlayers());
-						
+
 						break;
 					}
 					break;
@@ -170,18 +169,15 @@ public class Board extends Agent {
 					break;
 				}
 
-			} else {
-				System.out.println("Blocked");
+			} else 
 				block();
-			}
 
 		}
-		
+
 		private boolean verifySetup(ACLMessage msg) {
-			if(msg.getOntology().equals(Utilities.READY)) {
+			if(msg.getOntology().equals(Utilities.READY))
 				readyPlayers++;
-			}
-			System.out.println("Players Confirmed: " + readyPlayers);
+
 			return (readyPlayers == Utilities.numberPlayers);
 		}
 	}
@@ -211,22 +207,45 @@ public class Board extends Agent {
 
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 			msg.setContent(candidates);
-			msg.setOntology("Election");
+			msg.setOntology(Utilities.ELECTION);
 			for (int i = 0; i < Utilities.players.length; i++)
 				msg.addReceiver(Utilities.players[i]);
 			send(msg);	
 		}
-		
+
+		public void verifyElection(ACLMessage msg) {
+			switch(action(msg)) {
+			case 0: 
+				System.out.println("The Election has passed");
+				Utilities.currentState = State.PolicySelection;
+				informPlayersOfDelegacy();
+				sendCardsToPresident();
+				break;
+			case 1: //election is still going
+				break;
+			case -1: 
+				System.out.println("The Election has been refused");
+				electionTracker++;
+				System.out.println("election Tracker: " + electionTracker);
+				startDelegacy();
+				break;
+			case -2: //election tracker is 3
+				System.out.println("tracker = 3, the top card will be the new policy");
+				setNewPolicyFromHead(deck.poll());
+				break;
+
+			}
+
+
+		}
+
 		/**
 		 * Receives the vote from a Player
 		 * and proceeds with the election
 		 * @param msg
 		 * @return true if election has ended
 		 */
-		public boolean action(ACLMessage msg) {
-
-			if (checkEnd())
-				return true;
+		public int action(ACLMessage msg) {
 
 			switch (msg.getPerformative()) {
 			case ACLMessage.ACCEPT_PROPOSAL:
@@ -235,40 +254,42 @@ public class Board extends Agent {
 			case ACLMessage.REJECT_PROPOSAL:
 				nein++;
 				break;
-
 			default:
 				break;
 			}
-			if (checkEnd())
-				return true;
 
-			return false;
+			if (ja + nein == Utilities.numberPlayers) { 
+				if (ja > nein) 
+					return 0;
+				return -1;
+			}
 
+			if (electionTracker == 3) {
+				electionTracker = 0;
+				return -2;
+			}
+
+			return 1;
 		}
 
 		/**
 		 * Verifies the end of the election
 		 * If all players have voted, then if the majority voted yes, then election passes
 		 * otherwise, the electionTracker is incremented.
-		 * @return
+		 * @return 0 if passed, -1 if refused 
 		 */
-		public boolean checkEnd() {
-
-			if (electionTracker == 3) {
-				electionTracker = 0;
-				return true;
-			}
+		public int electionEnded() {
 
 			if (ja + nein == Utilities.numberPlayers) { 
 				if (ja > nein) {
 					System.out.println("The Election has passed");
-					return true;
+					return 0;
 				}
 				System.out.println("The Election has been refused");
 				electionTracker++;
-				//setPresident();				
+				return -1;
 			}
-			return false;
+			return 1;
 		}
 
 
@@ -281,10 +302,10 @@ public class Board extends Agent {
 	 * @param delegacy String that contains the string "president,chancellor"
 	 */
 	public void informPlayersOfDelegacy() {
-		
+
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setPerformative(ACLMessage.INFORM);
-		msg.setOntology("Delegacy");
+		msg.setOntology(Utilities.DELEGACY);
 		msg.setContent(Utilities.players[currentPresident].getLocalName() + "," + Utilities.players[currentChancellor].getLocalName());
 		for (int i = 0; i < Utilities.players.length; i++)
 			msg.addReceiver(Utilities.players[i]);
@@ -299,7 +320,7 @@ public class Board extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.addReceiver(Utilities.players[currentPresident]);
 		msg.setPerformative(ACLMessage.INFORM);
-		msg.setOntology("DiscardCard");
+		msg.setOntology(Utilities.DISCARD_CARD);
 		msg.setContent(getCards());
 		send(msg);		
 	}
@@ -318,7 +339,25 @@ public class Board extends Agent {
 		returnDiscardedCards(cardsInPlay.replaceFirst(card, ""));
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(content);
-		msg.setOntology("NewPolicy");
+		msg.setOntology(Utilities.NEW_POLICY);
+		for (int i = 0; i < Utilities.players.length; i++)
+			msg.addReceiver(Utilities.players[i]);
+		send(msg);
+	}
+
+	/*
+	 * Sets the passed policy from the chancellor
+	 */
+	public void setNewPolicyFromHead(String policy) {	
+
+		if (policy.equals("F"))
+			fascistPolicies++;
+		else if (policy.equals("L"))
+			liberalPolicies++;
+		deck.add(policy);
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.setContent(policy);
+		msg.setOntology(Utilities.NEW_POLICY_ELECTION);
 		for (int i = 0; i < Utilities.players.length; i++)
 			msg.addReceiver(Utilities.players[i]);
 		send(msg);
@@ -335,7 +374,7 @@ public class Board extends Agent {
 		for (i = 6; i < 17; i++)
 			cards[i] = "F";
 		Utilities.shuffleArray(cards);
-	
+
 		for(i = 0; i < cards.length; i++) {
 			deck.add(cards[i]);
 		}
@@ -369,7 +408,7 @@ public class Board extends Agent {
 		msg.setOntology(Utilities.REGISTER_OTHERS);
 		send(msg);
 	}
-	
+
 
 	/**
 	 * Adds the Board Agent to the DF

@@ -1,15 +1,12 @@
 package agents;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 
 import jade.core.AID;
-import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Hitler extends Player {
@@ -25,7 +22,6 @@ public class Hitler extends Player {
 	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
 			getMap().put(Utilities.players[i], -1.0);
-		System.out.println("I'm hitler" + Utilities.players[getIndex()].getName());
 		getMap().replace(Utilities.players[getIndex()],  100.0);
 
 	}
@@ -101,6 +97,13 @@ public class Hitler extends Player {
 	
 	public void updateInformation(String chancellorCards, String card) {
 		System.out.println("hitler updating stuff");
+		
+		//chancellor was inconclusive
+		//if (getMap().get(chancellor) == -1) {
+		//	if(chancellorCards.indexOf("F") == -1)
+				
+		//}
+
 	}
 
 

@@ -1,14 +1,11 @@
 package agents;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import jade.core.AID;
-import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Liberal extends Player{
@@ -47,8 +44,13 @@ public class Liberal extends Player{
 			}
 			return Utilities.players[index];
 		}
+		HashMap<AID, Double> aux = new HashMap<AID, Double>();
+		
+		for (Entry<AID, Double> entry : map.entrySet())
+			if ( entry.getKey() != getAID())
+				aux.put(entry.getKey(), entry.getValue());
 
-		return Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
+		return Collections.max(aux.entrySet(), Map.Entry.comparingByValue()).getKey();
 
 	}
 

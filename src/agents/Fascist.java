@@ -1,13 +1,10 @@
 package agents;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import jade.core.AID;
-import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Fascist extends Player{
@@ -19,18 +16,14 @@ public class Fascist extends Player{
 		super.type = "fascist";
 	}
 
-	@Override
 	public void registerFascists(String fascists) {
 		for (int i = 0, n = fascists.length(); i < n; i++) {
 			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
 			getMap().put(Utilities.players[fas], 100.0);
-			System.out.println("Hey i'm a fascist: " + Utilities.players[fas].getName() );
 		}
 		hitler = Utilities.players[fascists.length()];
-		for (int i = fascists.length(); i < Utilities.players.length; i++) {
+		for (int i = fascists.length(); i < Utilities.players.length; i++) 
 			getMap().put(Utilities.players[i], 0.0);
-			System.out.println("Hey i'm a liberal: " + Utilities.players[i].getName() );
-		}		
 	}
 
 	public AID chooseChancellor() {
@@ -81,9 +74,13 @@ public class Fascist extends Player{
 		return false;
 	}
 	
-	public void updateInformation(String chancellorCards, String card) {
+	
+	/*public void updateInformation(String chancellorCards, String card) {
 		System.out.println("fascist updating stuff");
-	}
+		
+		//if chancellor fascist
+		if (getMap().get(chancellor) == 100)
+	}*/
 	
 	
 	
