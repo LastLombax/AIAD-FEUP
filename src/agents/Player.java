@@ -154,13 +154,22 @@ public class Player extends Agent {
 		String[] msgContent = delegacy.split(","); 
 		String pres = msgContent[0];
 		String chanc= msgContent[1];
+
 		for (int i = 0; i < Utilities.players.length; i++) {
-			if (Utilities.players[i].getLocalName().equals(pres))
-				president = Utilities.players[i];			
-			if (Utilities.players[i].getLocalName().equals(chanc))
-				chancellor = Utilities.players[i];
+			String playerName = Utilities.players[i].getLocalName();
+			if (playerName.equals(pres)) {
+				president = Utilities.players[i];	
+				break;
+			}
 		}
 
+		for (int i = 0; i < Utilities.players.length; i++) {
+			String playerName = Utilities.players[i].getLocalName();
+			if (playerName.equals(chanc)) {
+				chancellor = Utilities.players[i];
+				break;
+			}
+		}
 	}
 
 
@@ -192,7 +201,7 @@ public class Player extends Agent {
 
 	}
 
-	
+
 
 	/**
 	 * Messages the Board to start the election
@@ -280,13 +289,13 @@ public class Player extends Agent {
 	 * @return Card that is the new policy
 	 */
 	public String selectCardToPass(String cards) { 
-		if(cards.indexOf("F") == -1 || cards.indexOf("L") == -1) {
+		if(cards.indexOf(Utilities.Fascist_Card) == -1 || cards.indexOf(Utilities.Liberal_Card) == -1) {
 			cards = cards.substring(1);
 		}
 		else if(getType().equals("fascist"))
-			cards = cards.replace("L", "");
+			cards = cards.replace(Utilities.Liberal_Card, "");
 		else 
-			cards = cards.replace("F", "");
+			cards = cards.replace(Utilities.Fascist_Card, "");
 		return cards;
 	}
 
@@ -297,14 +306,14 @@ public class Player extends Agent {
 	 * @return Two remaining cards
 	 */
 	public String selectCardToDiscard(String cards) {
-		if(cards.indexOf("F") == -1 || cards.indexOf("L") == -1) {
+		if(cards.indexOf(Utilities.Fascist_Card) == -1 || cards.indexOf(Utilities.Liberal_Card) == -1) {
 			cards = cards.substring(1);
 		}
 		else if (getType().equals("fascist")) {
-			cards = cards.replaceFirst("L", "");
+			cards = cards.replaceFirst(Utilities.Liberal_Card, "");
 		}
 		else {
-			cards = cards.replaceFirst("F", "");
+			cards = cards.replaceFirst(Utilities.Fascist_Card, "");
 		}
 		return cards;
 	}
@@ -333,8 +342,8 @@ public class Player extends Agent {
 		}
 		return -1;
 	}
-	
-	
+
+
 
 	/**
 	 * Searched the DF for the Board and saves it on @field Board
@@ -389,7 +398,47 @@ public class Player extends Agent {
 	 * @param chancellorCards Cards that the chancellor received
 	 * @param card Card that was chosen by the chancellor
 	 */
-	public void updateInformation(String chancellorCards, String card) {};
+	public void updateInformation(String chancellorCards, String card) {
+		Double presidentValue = null;
+		Double chancellorValue = null;
+
+		// O map.get(president) não está a funcionar e isto também não
+		for (Entry<AID, Double> entry : map.entrySet()) 
+			if (entry.getKey().getLocalName().equals(president.getLocalName()))
+				presidentValue = entry.getValue();
+
+		for (Entry<AID, Double> entry : map.entrySet()) 
+			if (entry.getKey().getLocalName().equals(chancellor.getLocalName()))
+				chancellorValue = entry.getValue();
+
+
+		System.out.println(presidentValue);
+		if (presidentValue < 65.0 && president.equals(this.getAID())) 
+			updateInformationOnPresident(chancellorCards, card, presidentValue);
+
+
+		if (chancellorValue < 65.0 && chancellor.equals(this.getAID())) 
+			updateInformationOnChancellor(chancellorCards, card, chancellorValue);
+		
+
+	}
+
+
+	/**
+	 * Updates information regarding the player who is the chancellor
+	 * @param chancellorValue 
+	 * @param card 
+	 * @param chancellorCards2 
+	 */
+	public void updateInformationOnChancellor(java.lang.String chancellorCards2, java.lang.String card, Double chancellorValue) {};
+
+	/**
+	 * Updates information regarding the player who is the president
+	 * @param value 
+	 * @param card 
+	 * @param chancellorCards 
+	 */
+	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {};
 
 
 	/**

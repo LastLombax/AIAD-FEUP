@@ -95,14 +95,48 @@ public class Hitler extends Player {
 		return false;
 	}
 	
-	public void updateInformation(String chancellorCards, String card) {
-		System.out.println("hitler updating stuff");
-		
-		//chancellor was inconclusive
-		//if (getMap().get(chancellor) == -1) {
-		//	if(chancellorCards.indexOf("F") == -1)
-				
-		//}
+	
+
+	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {
+
+		if(chancellorCards.indexOf(Utilities.Fascist_Card) == -1) // fascist with LLL or liberal with LLL/FLL
+			value+=6.0;
+
+		else if (chancellorCards.indexOf(Utilities.Liberal_Card) == -1) //fascist with FFF/FFL or liberal with FFF
+			value+=9.0;
+
+		else {
+			if (card.equals(Utilities.Liberal_Card))
+				value+=10.0;
+			else
+				value-=20.0;			
+		}
+		if (value < -1)
+			value = 0.0;
+		else if (value > 100)
+			value = 100.0;
+
+		map.put(super.president, value);
+	}
+
+
+	public void updateInformationOnChancellor(String chancellorCards, String card, Double value) {
+
+		//if chancellor cards are LL or FF, the chancellor didn't have a choice, so no conclusions
+		int countFascists = chancellorCards.length() - chancellorCards.replaceAll("F","").length();
+		int countLiberals = chancellorCards.length() - chancellorCards.replaceAll("L","").length();
+
+		if (countFascists == 1 && countLiberals == 1) //FL or LF
+			value+=30;
+		else
+			value-=30;			
+
+		if (value < -1)
+			value = 0.0;
+		else if (value > 100)
+			value = 100.0;
+
+		map.put(chancellor, value);
 
 	}
 
