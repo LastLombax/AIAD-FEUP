@@ -99,14 +99,14 @@ public class Hitler extends Player {
 
 	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {
 
-		if(chancellorCards.indexOf(Utilities.Fascist_Card) == -1) // fascist with LLL or liberal with LLL/FLL
+		if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
 			value+=6.0;
 
-		else if (chancellorCards.indexOf(Utilities.Liberal_Card) == -1) //fascist with FFF/FFL or liberal with FFF
+		else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
 			value+=9.0;
 
 		else {
-			if (card.equals(Utilities.Liberal_Card))
+			if (card.equals(Utilities.LIBERAL_CARD))
 				value+=10.0;
 			else
 				value-=20.0;			

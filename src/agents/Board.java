@@ -332,9 +332,9 @@ public class Board extends Agent {
 
 		String[] msgContent = content.split(","); 
 		String card = msgContent[1];
-		if (card.equals(Utilities.Fascist_Card))
+		if (card.equals(Utilities.FASCIST_CARD))
 			fascistPolicies++;
-		else if (card.equals(Utilities.Liberal_Card))
+		else if (card.equals(Utilities.LIBERAL_CARD))
 			liberalPolicies++;
 		returnDiscardedCards(cardsInPlay.replaceFirst(card, ""));
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -350,9 +350,9 @@ public class Board extends Agent {
 	 */
 	public void setNewPolicyFromHead(String policy) {	
 
-		if (policy.equals(Utilities.Fascist_Card))
+		if (policy.equals(Utilities.FASCIST_CARD))
 			fascistPolicies++;
-		else if (policy.equals(Utilities.Liberal_Card))
+		else if (policy.equals(Utilities.LIBERAL_CARD))
 			liberalPolicies++;
 		deck.add(policy);
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -370,9 +370,9 @@ public class Board extends Agent {
 		String[] cards = new String[17];
 		int i;
 		for (i = 0; i < 6; i++)
-			cards[i] = Utilities.Liberal_Card;
+			cards[i] = Utilities.LIBERAL_CARD;
 		for (i = 6; i < 17; i++)
-			cards[i] = Utilities.Fascist_Card;
+			cards[i] = Utilities.FASCIST_CARD;
 		Utilities.shuffleArray(cards);
 
 		for(i = 0; i < cards.length; i++) {

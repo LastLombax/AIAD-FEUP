@@ -289,13 +289,13 @@ public class Player extends Agent {
 	 * @return Card that is the new policy
 	 */
 	public String selectCardToPass(String cards) { 
-		if(cards.indexOf(Utilities.Fascist_Card) == -1 || cards.indexOf(Utilities.Liberal_Card) == -1) {
+		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
 			cards = cards.substring(1);
 		}
 		else if(getType().equals("fascist"))
-			cards = cards.replace(Utilities.Liberal_Card, "");
+			cards = cards.replace(Utilities.LIBERAL_CARD, "");
 		else 
-			cards = cards.replace(Utilities.Fascist_Card, "");
+			cards = cards.replace(Utilities.FASCIST_CARD, "");
 		return cards;
 	}
 
@@ -306,14 +306,14 @@ public class Player extends Agent {
 	 * @return Two remaining cards
 	 */
 	public String selectCardToDiscard(String cards) {
-		if(cards.indexOf(Utilities.Fascist_Card) == -1 || cards.indexOf(Utilities.Liberal_Card) == -1) {
+		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
 			cards = cards.substring(1);
 		}
 		else if (getType().equals("fascist")) {
-			cards = cards.replaceFirst(Utilities.Liberal_Card, "");
+			cards = cards.replaceFirst(Utilities.LIBERAL_CARD, "");
 		}
 		else {
-			cards = cards.replaceFirst(Utilities.Fascist_Card, "");
+			cards = cards.replaceFirst(Utilities.FASCIST_CARD, "");
 		}
 		return cards;
 	}
@@ -402,7 +402,7 @@ public class Player extends Agent {
 		Double presidentValue = null;
 		Double chancellorValue = null;
 
-		// O map.get(president) não está a funcionar e isto também não
+		// O map.get(president) nï¿½o estï¿½ a funcionar e isto tambï¿½m nï¿½o
 		for (Entry<AID, Double> entry : map.entrySet()) 
 			if (entry.getKey().getLocalName().equals(president.getLocalName()))
 				presidentValue = entry.getValue();

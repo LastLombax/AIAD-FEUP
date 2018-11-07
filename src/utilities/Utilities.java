@@ -38,8 +38,8 @@ public class Utilities {
 	public static String FASCIST_POLICIES = "Fascist_Policies";
 	public static String LIBERAL_POLICIES = "Liberal_Policies";
 	
-	public static String Liberal_Card = "L";
-	public static String Fascist_Card = "F";
+	public static String LIBERAL_CARD = "L";
+	public static String FASCIST_CARD = "F";
 
 	public static AID[] players;
 	public static int numberPlayers = 7;
