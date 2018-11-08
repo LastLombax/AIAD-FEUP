@@ -12,9 +12,14 @@ import utilities.Utilities;
 public class Hitler extends Player {
 
 
+
 	public void setup() {
 		super.setup();
 		super.type = "fascist";
+<<<<<<< HEAD
+
+	}
+=======
 		for (int i = 0; i < Utilities.players.length; i++)
 			getMap().put(Utilities.players[i], 60.0);
 		getMap().replace(Utilities.players[getIndex()],  100.0);
@@ -30,28 +35,29 @@ public class Hitler extends Player {
 		System.out.println("CHOOSE CHANCELOR HITLER");
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
+>>>>>>> branch 'master' of https://github.com/LastLombax/AIAD-FEUP
 
 
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
 
 		//both are fascists or inconclusive
 		if ( (presidentValue >= 65 && chancellorValue >= 65 )
-				|| (presidentValue == -1 && chancellorValue == -1))
+				|| (presidentValue == 50 && chancellorValue == 50))
 			return true;
 
 		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
 		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
 
 
-		//president -1
-		if (presidentValue == -1) {
+		//president 50
+		if (presidentValue == 50) {
 			if (chancellorValue >= 65 && fascistPolicies - liberalPolicies >= 0)
 				return true;
 			return false;
 		}
 
-		//chancellor -1
-		if (chancellorValue == -1) {
+		//chancellor 50
+		if (chancellorValue == 50) {
 			if (presidentValue >= 65)
 				return true;
 			if (presidentValue < 65 && fascistPolicies - liberalPolicies >= 3)
@@ -91,12 +97,12 @@ public class Hitler extends Player {
 			else
 				value-=20.0;			
 		}
-		if (value < -1)
+		if (value < 0)
 			value = 0.0;
 		else if (value > 100)
 			value = 100.0;
 
-		map.put(super.president, value);
+		//map.put(super.president, value);
 	}
 
 
@@ -111,12 +117,12 @@ public class Hitler extends Player {
 		else
 			value-=30;			
 
-		if (value < -1)
+		if (value < 0)
 			value = 0.0;
 		else if (value > 100)
 			value = 100.0;
 
-		map.put(chancellor, value);
+	//	map.put(chancellor, value);
 
 	}
 
