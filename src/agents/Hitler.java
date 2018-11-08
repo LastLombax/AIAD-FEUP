@@ -118,6 +118,17 @@ public class Hitler extends Player {
 		map.put(chancellor, value);
 
 	}
+	
+	public String selectCardToDiscard(String cards) {
+		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
+			cards = cards.substring(1);
+		}
+		else {
+			cards = cards.replaceFirst(Utilities.LIBERAL_CARD, "");
+		}
+		return cards;	
+		
+	}
 
 
 }

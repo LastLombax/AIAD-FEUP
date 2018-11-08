@@ -122,4 +122,15 @@ public class Liberal extends Player{
 
 	}
 	
+	public String selectCardToDiscard(String cards) {
+		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
+			cards = cards.substring(1);
+		}
+		else {
+			cards = cards.replaceFirst(Utilities.FASCIST_CARD, "");
+		}
+		
+		return cards;
+	}
+	
 }

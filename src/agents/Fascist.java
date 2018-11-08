@@ -78,15 +78,14 @@ public class Fascist extends Player{
 		return false;
 	}
 	
-	
-	/*public void updateInformation(String chancellorCards, String card) {
-		System.out.println("fascist updating stuff");
-		
-		//if chancellor fascist
-		if (getMap().get(chancellor) == 100)
-	}*/
-	
-	
-	
+	public String selectCardToDiscard(String cards) {
+		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
+			cards = cards.substring(1);
+		}
+		else {
+			cards = cards.replaceFirst(Utilities.LIBERAL_CARD, "");
+		}
+		return cards;
+	}
 
 }

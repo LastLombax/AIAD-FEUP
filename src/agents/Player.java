@@ -55,29 +55,7 @@ public class Player extends Agent {
 					this.dealElection(msg);
 					break;
 				case PolicySelection :
-					switch(msg.getOntology()) {
-					case "DiscardCard":
-						System.out.println("Cards: " + msg.getContent());
-						String newCards = selectCardToDiscard(msg.getContent());
-						System.out.println("new cards: " + newCards);
-						sendCardsToChancellor(chancellor, newCards);
-						break;
-					case "SelectFinalPolicy":
-						String selectedPolicy = selectCardToPass(msg.getContent());
-						System.out.println("New Policy: " + selectedPolicy);
-						sendPolicyToBoard(msg.getContent(), selectedPolicy);
-						break;
-					case "Delegacy":
-						updateDelegacy(msg.getContent());
-						break;
-
-					case "NewPolicy":
-						updateInformation(msg.getContent());
-						enterNextTurn();
-						break;
-					default:
-						break;		
-					}
+					this.dealPolicySelection(msg);
 				default:
 					break;
 				}
@@ -113,6 +91,27 @@ public class Player extends Agent {
 				updateInformation(msg.getContent());
 				enterNextTurn();
 			}	
+		}
+		
+		private void dealPolicySelection(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.DELEGACY)) {
+				updateDelegacy(msg.getContent());
+			}
+			else if(msg.getOntology().equals(Utilities.DISCARD_CARD)) {
+				System.out.println(getAID().getLocalName() + ": Cards passed to me: " + msg.getContent());
+				String newCards = selectCardToDiscard(msg.getContent());
+				System.out.println(getAID().getLocalName() + ": Cards i selected: " + newCards);
+				sendCardsToChancellor(chancellor, newCards);
+			}
+			else if(msg.getOntology().equals("SelectFinalPolicy")) {
+				String selectedPolicy = selectCardToPass(msg.getContent());
+				System.out.println("New Policy: " + selectedPolicy);
+				sendPolicyToBoard(msg.getContent(), selectedPolicy);
+			}
+			else if(msg.getOntology().equals("NewPolicy")) {
+				updateInformation(msg.getContent());
+				enterNextTurn();
+			}
 		}
 
 	}
@@ -299,16 +298,7 @@ public class Player extends Agent {
 	 * @return Two remaining cards
 	 */
 	public String selectCardToDiscard(String cards) {
-		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
-			cards = cards.substring(1);
-		}
-		else if (getType().equals("fascist")) {
-			cards = cards.replaceFirst(Utilities.LIBERAL_CARD, "");
-		}
-		else {
-			cards = cards.replaceFirst(Utilities.FASCIST_CARD, "");
-		}
-		return cards;
+		return null;
 	}
 
 

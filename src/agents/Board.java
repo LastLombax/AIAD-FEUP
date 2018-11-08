@@ -2,6 +2,8 @@ package agents;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
@@ -24,6 +26,8 @@ public class Board extends Agent {
 	private int currentChancellor;
 
 	private int electionTracker = 0;
+	
+	private  AID[] players;
 
 	Queue<String> deck = new LinkedList<>();
 	String cardsInPlay;
@@ -233,12 +237,8 @@ public class Board extends Agent {
 			case 1: //election is still going
 				break;
 			case -1: 
-				electionTracker++;
-				System.out.println("election Tracker: " + electionTracker);
-				//startDelegacy();
 				break;
 			case -2: //election tracker is 3
-				System.out.println("tracker = 3, the top card will be the new policy");
 				setNewPolicyFromHead(deck.poll());
 				break;
 
@@ -265,42 +265,30 @@ public class Board extends Agent {
 			default:
 				break;
 			}
-
-			if (ja + nein == Utilities.numberPlayers) { 
-				if (ja > nein) 
-					return 0;
-				return -1;
-			}
-
+			
 			if (electionTracker == 3) {
+				System.out.println("Election failed 3 times, the top card will be the new policy");
 				electionTracker = 0;
 				return -2;
 			}
 
-			return 1;
-		}
-
-		/**
-		 * Verifies the end of the election
-		 * If all players have voted, then if the majority voted yes, then election passes
-		 * otherwise, the electionTracker is incremented.
-		 * @return 0 if passed, -1 if refused 
-		 */
-		public int electionEnded() {
-
 			if (ja + nein == Utilities.numberPlayers) { 
-				if (ja > nein) {
+				if (ja > nein)
+				{
 					System.out.println("The Election has passed");
 					return 0;
 				}
-				System.out.println("The Election has been refused");
-				electionTracker++;
-				return -1;
+				else {
+					System.out.println("The Election has been refused");
+					electionTracker++;
+					System.out.println("Election Tracker: " + electionTracker);
+					return -1;
+				}
+				
 			}
+
 			return 1;
 		}
-
-
 	}
 
 
@@ -310,7 +298,6 @@ public class Board extends Agent {
 	 * @param delegacy String that contains the string "president,chancellor"
 	 */
 	public void informPlayersOfDelegacy() {
-
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setPerformative(ACLMessage.INFORM);
 		msg.setOntology(Utilities.DELEGACY);
@@ -318,7 +305,6 @@ public class Board extends Agent {
 		for (int i = 0; i < Utilities.players.length; i++)
 			msg.addReceiver(Utilities.players[i]);
 		send(msg);
-
 	}
 
 	/**
