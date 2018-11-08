@@ -22,6 +22,8 @@ public class Player extends Agent {
 	AID board;
 
 	AID president, chancellor;
+	
+	private int fascistPolicies;
 
 	protected String type = null;
 
@@ -53,19 +55,7 @@ public class Player extends Agent {
 					this.dealDelegation(msg);
 					break;
 				case Election :
-					switch(msg.getOntology()) {
-					case "Election":
-						Boolean vote = voteForElection(msg.getContent());
-						System.out.println(getAID().getLocalName() + " voted: " + vote);
-						sendVoteToBoard(vote);
-						break;
-					case "NewPolicyElection":
-						updateInformation(msg.getContent());
-						enterNextTurn();
-						break;
-					default:
-						break;		
-					}
+					this.dealElection(msg);
 					break;
 				case PolicySelection :
 					switch(msg.getOntology()) {
@@ -105,18 +95,33 @@ public class Player extends Agent {
 			if(msg.getOntology().equals(Utilities.REGISTER_FASCIST)) {
 				registerFascists(msg.getContent());
 			}
-			else if(msg.getOntology().equals(Utilities.REGISTER_OTHERS)) {
-				registerOthers();
-			}
 		}
 
 		private void dealDelegation(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.PRESIDENT)) {
-				chancellor = chooseChancellor();
-				System.out.println("Chancellor: " + chancellor.getLocalName());
-				startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+				int p = Integer.parseInt(msg.getContent());
+				president = Utilities.players[p];
+				System.out.println(getAID().getLocalName() + ": PRESIDENT IS " + Utilities.players[p].getLocalName());
+				if(president.equals(Utilities.players[getIndex()])) {
+					chancellor = chooseChancellor();
+					System.out.println(getAID().getLocalName() + ": Chancellor: " + chancellor.getLocalName());
+					startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+				}
 			}
 
+		}
+		
+		private void dealElection(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.ELECTION_BEGIN)) {
+				System.out.println("PLAYER: ELECTION BEGIN");
+				//Boolean vote = voteForElection(msg.getContent());
+				//System.out.println(getAID().getLocalName() + " voted: " + vote);
+				//sendVoteToBoard(vote);
+			}
+			else if(msg.getOntology().equals("NewPolicyElection")) {
+				updateInformation(msg.getContent());
+				enterNextTurn();
+			}	
 		}
 
 	}
@@ -128,7 +133,7 @@ public class Player extends Agent {
 		@Override
 		public void action() {
 			getBoardFromDF();
-			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			msg.addReceiver(board);
 			msg.setOntology(Utilities.READY);
 			send(msg);
@@ -209,10 +214,9 @@ public class Player extends Agent {
 	 * @param president Name of the president
 	 */
 	public void startElection(String chancellor, String president) {
-		Utilities.currentState = State.Election;
 		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-		msg.setContent(president + "," + chancellor);
-		msg.setOntology("Election_Begin");
+		msg.setContent(chancellor);
+		msg.setOntology(Utilities.ELECTION_BEGIN);
 		msg.addReceiver(board);
 		send(msg);
 	}
@@ -325,10 +329,12 @@ public class Player extends Agent {
 	 * @return Number of passed policies
 	 */
 	public int getPoliciesFromBoard(String ontology) {
+		System.out.println("GET POLICIES FROM BOARD: " + ontology );
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(board);
 		msg.setOntology(ontology);
 		send(msg);
+		System.out.println("MESSAGE SENT:  " + ontology );
 
 		ACLMessage answer = null;
 		while(answer == null) {
@@ -342,6 +348,7 @@ public class Player extends Agent {
 		}
 		return -1;
 	}
+	
 
 
 

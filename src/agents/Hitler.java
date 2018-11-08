@@ -15,40 +15,20 @@ public class Hitler extends Player {
 	public void setup() {
 		super.setup();
 		super.type = "fascist";
-
-	}
-
-
-	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
-			getMap().put(Utilities.players[i], -1.0);
+			getMap().put(Utilities.players[i], 60.0);
 		getMap().replace(Utilities.players[getIndex()],  100.0);
-
+		System.out.println(getAID().getLocalName() + ": " + type);
 	}
 
 	public AID chooseChancellor() {
-
-		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies");
-
-		HashMap<AID, Double> listOfFas = new HashMap<AID, Double>();
-
+		HashMap<AID, Double> listOfLib = new HashMap<AID, Double>();
+		System.out.println("CHOOSE CHANCELOR HITLER");
 		for (Entry<AID, Double> entry : map.entrySet())
-			if ((entry.getValue() >= 65 || entry.getValue() == -1 ) && entry.getKey() != getAID())
-				listOfFas.put(entry.getKey(), entry.getValue());
-
-		int index = 0;
-
-		if (listOfFas.isEmpty()) {
-			int myIndex = getIndex();
-			while(true) {
-				index = ThreadLocalRandom.current().nextInt(Utilities.players.length);
-				if (index != myIndex)
-					break;
-			}
-			return Utilities.players[index];
-		}
-
-		return Collections.max(map.entrySet(), Map.Entry.comparingByValue()).getKey();
+			if (entry.getKey() != getAID())
+				listOfLib.put(entry.getKey(), entry.getValue());
+		System.out.println("CHOOSE CHANCELOR HITLER");
+		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
 
 

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -44,9 +45,12 @@ public class Board extends Agent {
 			currentPresident++;
 		System.out.println("President " + Utilities.players[currentPresident].getLocalName());
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.addReceiver(Utilities.players[currentPresident]);
+		for(int i = 0; i < Utilities.numberPlayers; i++) {
+			msg.addReceiver(Utilities.players[i]);
+		}
 		msg.setPerformative(ACLMessage.INFORM);
 		msg.setOntology(Utilities.PRESIDENT);
+		msg.setContent(Integer.toString(currentPresident));
 		send(msg);
 	}
 
@@ -70,31 +74,6 @@ public class Board extends Agent {
 	}
 
 	/**
-	 * Initiates the game after every agent is ready
-	 */
-	private void startGame() {
-		System.out.println("THE GAME HAS BEGUN");
-		createCards();
-		sendInfoToFascists();
-		Utilities.shuffleArray(Utilities.players);
-		sendInfoToRest();
-		startDelegacy();
-	}
-
-	/**
-	 * Begins delegacy by changing the state and setting the president
-	 */
-	private void startDelegacy() {
-		
-		System.out.println("Fascist Policies: " + fascistPolicies);
-		System.out.println("Liberal Policies: " + liberalPolicies);
-		
-		Utilities.currentState = State.Delegation;
-		setPresident();
-
-	}
-
-	/**
 	 * Class to manage all messages from players during the game
 	 */
 	class MessagesFromPlayers extends CyclicBehaviour {
@@ -103,45 +82,16 @@ public class Board extends Agent {
 		public void action() {
 			ACLMessage msg = receive();
 			if (msg != null) {
-				ACLMessage reply = null;
-				reply = msg.createReply();
 				switch (Utilities.currentState) {
 				case Setup:
 					if(this.verifySetup(msg)) 
 						startGame();
 					break;
 				case Delegation :
-					switch (msg.getOntology()) {
-					case "Fascist_Policies":
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology(Utilities.FASCIST_POLICIES);
-						reply.setContent(fascistPolicies + "");
-						send(reply);
-						break;
-					case "Liberal_Policies":
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology(Utilities.LIBERAL_POLICIES);
-						reply.setContent(liberalPolicies + "");
-						send(reply);
-						break;
-					default:
-						break;
-					}
+					this.dealDelegation(msg);
 					break;
 				case Election :
 					switch (msg.getOntology()) {
-					case "Fascist_Policies":
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology(Utilities.FASCIST_POLICIES);
-						reply.setContent(fascistPolicies + "");
-						send(reply);
-						break;
-					case "Liberal_Policies":
-						reply.setPerformative(ACLMessage.INFORM);
-						reply.setOntology(Utilities.LIBERAL_POLICIES);
-						reply.setContent(liberalPolicies + "");
-						send(reply);
-						break;
 					case "Election_Begin":
 						election = new Election(msg.getContent());
 						break;
@@ -175,13 +125,63 @@ public class Board extends Agent {
 		}
 
 		private boolean verifySetup(ACLMessage msg) {
+			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology());
 			if(msg.getOntology().equals(Utilities.READY))
 				readyPlayers++;
 
 			return (readyPlayers == Utilities.numberPlayers);
 		}
+		
+		private boolean dealDelegation(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.ELECTION_BEGIN)) {
+				Utilities.currentState = State.Election;
+				System.out.println("BOARD: ELECTION BEGIN, Chancelor:  " + msg.getContent());
+				String ch = msg.getContent();
+				ACLMessage reply = new ACLMessage(ACLMessage.PROPOSE);
+				for(int i = 0; i < Utilities.numberPlayers; i++) {
+					reply.addReceiver(Utilities.players[i]);
+				}
+				
+				msg.setContent(ch);
+				msg.setOntology(Utilities.ELECTION_BEGIN);
+				send(msg);
+			}
+			else if (msg.getOntology().equals(Utilities.FASCIST_POLICIES)) {
+				ACLMessage reply = msg.createReply();
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setOntology(Utilities.FASCIST_POLICIES);
+				reply.setContent(fascistPolicies + "");
+				send(reply);
+			}
+//		case "Liberal_Policies":
+//			reply.setPerformative(ACLMessage.INFORM);
+//			reply.setOntology(Utilities.LIBERAL_POLICIES);
+//			reply.setContent(liberalPolicies + "");
+//			send(reply);
+//			break;
+			return true;
+		}
 	}
+	
+	private void startGame() {
+		this.addBehaviour(new startGame());
+	}
+	
+	class startGame extends OneShotBehaviour{
+		@Override
+		public void action() {
+			System.out.println("THE GAME HAS BEGUN");
+			createCards();
+			sendInfoToFascists();
+			Utilities.shuffleArray(Utilities.players);
+			System.out.println("Fascist Policies: " + fascistPolicies);
+			System.out.println("Liberal Policies: " + liberalPolicies);			
+			Utilities.currentState = State.Delegation;
+			setPresident();
+		}
 
+	}
+		
 	/**
 	 * Election class that manages the election phase
 	 * @author vitor
@@ -227,7 +227,7 @@ public class Board extends Agent {
 				System.out.println("The Election has been refused");
 				electionTracker++;
 				System.out.println("election Tracker: " + electionTracker);
-				startDelegacy();
+				//startDelegacy();
 				break;
 			case -2: //election tracker is 3
 				System.out.println("tracker = 3, the top card will be the new policy");
@@ -397,18 +397,6 @@ public class Board extends Agent {
 		msg.setContent(fascists);
 		send(msg);
 	}
-
-	/**
-	 * Sends request to other players to register about the other players
-	 */
-	private void sendInfoToRest() {
-		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers; i++)
-			msg.addReceiver(Utilities.players[i]);
-		msg.setOntology(Utilities.REGISTER_OTHERS);
-		send(msg);
-	}
-
 
 	/**
 	 * Adds the Board Agent to the DF

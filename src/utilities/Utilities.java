@@ -37,6 +37,7 @@ public class Utilities {
 	public static String NEW_POLICY_ELECTION = "NewPolicyElection";
 	public static String FASCIST_POLICIES = "Fascist_Policies";
 	public static String LIBERAL_POLICIES = "Liberal_Policies";
+	public static String ELECTION_BEGIN = "Election_Begin";
 	
 	public static String LIBERAL_CARD = "L";
 	public static String FASCIST_CARD = "F";

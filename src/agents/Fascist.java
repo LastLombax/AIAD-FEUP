@@ -5,15 +5,18 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import jade.core.AID;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Fascist extends Player{
-
 	public AID hitler;
 
 	public void setup() {
 		super.setup();	
 		super.type = "fascist";
+		System.out.println(getAID().getLocalName() + ": " + type);
 	}
 
 	public void registerFascists(String fascists) {
@@ -22,14 +25,13 @@ public class Fascist extends Player{
 			getMap().put(Utilities.players[fas], 100.0);
 		}
 		hitler = Utilities.players[fascists.length()];
-		for (int i = fascists.length(); i < Utilities.players.length; i++) 
+		for (int i = fascists.length(); i < Utilities.players.length; i++) {
 			getMap().put(Utilities.players[i], 0.0);
+		}			
 	}
 
 	public AID chooseChancellor() {
-
-		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
-
+		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
 		if (fascistPolicies >= 3) 
 			return hitler;
 
@@ -44,9 +46,7 @@ public class Fascist extends Player{
 
 		return listOfFas.get(index);
 	}
-
-
-
+	
 
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
 		//both are fascists

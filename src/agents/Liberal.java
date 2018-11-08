@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import jade.core.AID;
+import jade.core.behaviours.OneShotBehaviour;
 import utilities.Utilities;
 
 public class Liberal extends Player{
@@ -14,44 +15,21 @@ public class Liberal extends Player{
 	public void setup() {
 		super.setup();
 		super.type = "liberal";
-	}
-
-
-	public void registerOthers() {
 		for (int i = 0; i < Utilities.players.length; i++)
-			getMap().put(Utilities.players[i], -1.0);
+			getMap().put(Utilities.players[i], 60.0);
 		getMap().replace(Utilities.players[getIndex()],  100.0);
+		System.out.println(getAID().getLocalName() + ": " + type);
 	}
-
+	
 	public AID chooseChancellor() {
-
-		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
-
+		System.out.println("CHOOSE CHANCELOR LIBERAL");
 		HashMap<AID, Double> listOfLib = new HashMap<AID, Double>();
-
+		System.out.println("CHOOSE CHANCELOR LIBERAL");
 		for (Entry<AID, Double> entry : map.entrySet())
-			if ((entry.getValue() >= 65 || entry.getValue() == -1 ) && entry.getKey() != getAID())
+			if (entry.getKey() != getAID())
 				listOfLib.put(entry.getKey(), entry.getValue());
 
-		int index = 0;
-
-		if (listOfLib.isEmpty()) {
-			int myIndex = getIndex();
-			while(true) {
-				index = ThreadLocalRandom.current().nextInt(Utilities.players.length);
-				if (index != myIndex)
-					break;
-			}
-			return Utilities.players[index];
-		}
-		HashMap<AID, Double> aux = new HashMap<AID, Double>();
-
-		for (Entry<AID, Double> entry : map.entrySet())
-			if ( entry.getKey() != getAID())
-				aux.put(entry.getKey(), entry.getValue());
-
-		return Collections.max(aux.entrySet(), Map.Entry.comparingByValue()).getKey();
-
+		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}
 
 
@@ -145,4 +123,5 @@ public class Liberal extends Player{
 		map.put(chancellor, value);
 
 	}
+	
 }
