@@ -22,9 +22,7 @@ public class Liberal extends Player{
 	}
 	
 	public AID chooseChancellor() {
-		System.out.println("CHOOSE CHANCELOR LIBERAL");
 		HashMap<AID, Double> listOfLib = new HashMap<AID, Double>();
-		System.out.println("CHOOSE CHANCELOR LIBERAL");
 		for (Entry<AID, Double> entry : map.entrySet())
 			if (entry.getKey() != getAID())
 				listOfLib.put(entry.getKey(), entry.getValue());
@@ -37,15 +35,15 @@ public class Liberal extends Player{
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
 		//both are liberals or inconclusive
 		if ( (presidentValue >= 65 && chancellorValue >= 65 )
-				|| (presidentValue == -1 && chancellorValue == -1))
+				|| (presidentValue == 60 && chancellorValue == 60))
 			return true;
 
-		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
-		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
+		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
+		int liberalPolicies = super.getPoliciesFromBoard(Utilities.LIBERAL_POLICIES); 
 
 
 		//president -1
-		if (presidentValue == -1) {
+		if (presidentValue == 60) {
 			if (chancellorValue >= 65 && fascistPolicies - liberalPolicies <= 1)
 				return true;
 			if (chancellorValue < 65 && liberalPolicies - fascistPolicies >= 2)
@@ -54,7 +52,7 @@ public class Liberal extends Player{
 		}
 
 		//chancellor -1
-		if (chancellorValue == -1) {
+		if (chancellorValue == 60) {
 			if (presidentValue >= 65 && liberalPolicies - fascistPolicies >= 0)
 				return true;
 			return false;

@@ -91,18 +91,8 @@ public class Board extends Agent {
 					this.dealDelegation(msg);
 					break;
 				case Election :
-					switch (msg.getOntology()) {
-					case "Election_Begin":
-						election = new Election(msg.getContent());
-						break;
-					case "Election_Vote":
-						election.verifyElection(msg);
-						break;
-					default:
-						break;
-					}
+					this.dealElection(msg);
 					break;
-
 				case PolicySelection :
 					switch (msg.getOntology()) {
 					case "SelectedPolicy":
@@ -153,13 +143,37 @@ public class Board extends Agent {
 				reply.setContent(fascistPolicies + "");
 				send(reply);
 			}
-//		case "Liberal_Policies":
-//			reply.setPerformative(ACLMessage.INFORM);
-//			reply.setOntology(Utilities.LIBERAL_POLICIES);
-//			reply.setContent(liberalPolicies + "");
-//			send(reply);
-//			break;
+			else if (msg.getOntology().equals(Utilities.LIBERAL_POLICIES)) {
+				ACLMessage reply = msg.createReply();
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setOntology(Utilities.LIBERAL_POLICIES);
+				reply.setContent(liberalPolicies + "");
+				send(reply);
+			}
 			return true;
+		}
+		
+		private void dealElection(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.ELECTION_BEGIN)) {
+				election = new Election(msg.getContent());
+			}
+			else if(msg.getOntology().equals(Utilities.ELECTION_VOTE)) {
+				election.verifyElection(msg);
+			}
+			else if (msg.getOntology().equals(Utilities.FASCIST_POLICIES)) {
+				ACLMessage reply = msg.createReply();
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setOntology(Utilities.FASCIST_POLICIES);
+				reply.setContent(fascistPolicies + "");
+				send(reply);
+			}
+			else if (msg.getOntology().equals(Utilities.LIBERAL_POLICIES)) {
+				ACLMessage reply = msg.createReply();
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setOntology(Utilities.LIBERAL_POLICIES);
+				reply.setContent(liberalPolicies + "");
+				send(reply);
+			}
 		}
 	}
 	
@@ -172,7 +186,6 @@ public class Board extends Agent {
 		public void action() {
 			System.out.println("THE GAME HAS BEGUN");
 			createCards();
-			sendInfoToFascists();
 			Utilities.shuffleArray(Utilities.players);
 			System.out.println("Fascist Policies: " + fascistPolicies);
 			System.out.println("Liberal Policies: " + liberalPolicies);			
@@ -197,16 +210,13 @@ public class Board extends Agent {
 		 * sends them to all players a PROPOSE message to begin the Election
 		 * @param candidates
 		 */
-		Election(String candidates){
-			String[] msgContent = candidates.split(","); 
-			String chancellor = msgContent[1];
-
+		Election(String chancellor){
 			for (int i = 0; i < Utilities.players.length; i++)
 				if (Utilities.players[i].getLocalName().equals(chancellor)) 
 					currentChancellor = i;
 
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-			msg.setContent(candidates);
+			msg.setContent(Utilities.players[currentPresident].getLocalName() + "," + chancellor);
 			msg.setOntology(Utilities.ELECTION);
 			for (int i = 0; i < Utilities.players.length; i++)
 				msg.addReceiver(Utilities.players[i]);
@@ -216,7 +226,6 @@ public class Board extends Agent {
 		public void verifyElection(ACLMessage msg) {
 			switch(action(msg)) {
 			case 0: 
-				System.out.println("The Election has passed");
 				Utilities.currentState = State.PolicySelection;
 				informPlayersOfDelegacy();
 				sendCardsToPresident();
@@ -224,7 +233,6 @@ public class Board extends Agent {
 			case 1: //election is still going
 				break;
 			case -1: 
-				System.out.println("The Election has been refused");
 				electionTracker++;
 				System.out.println("election Tracker: " + electionTracker);
 				//startDelegacy();
@@ -378,24 +386,6 @@ public class Board extends Agent {
 		for(i = 0; i < cards.length; i++) {
 			deck.add(cards[i]);
 		}
-	}
-
-	/**
-	 * Sends request to all fascists to register who is a fascist. Hitler does not
-	 * hold this information
-	 */
-	private void sendInfoToFascists() {
-		String fascists = "";
-		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		int i = 0;
-		for (; i < (int) Math.ceil(Utilities.players.length * 0.4) - 1; i++) {
-			msg.addReceiver(Utilities.players[i]);
-			fascists += i;
-		}
-		fascists += i;
-		msg.setOntology(Utilities.REGISTER_FASCIST);
-		msg.setContent(fascists);
-		send(msg);
 	}
 
 	/**

@@ -17,9 +17,14 @@ public class Fascist extends Player{
 		super.setup();	
 		super.type = "fascist";
 		System.out.println(getAID().getLocalName() + ": " + type);
+		registerFascists();
 	}
 
-	public void registerFascists(String fascists) {
+	public void registerFascists() {
+		String fascists = "";
+		for (int i = 0; i < (int) Math.ceil(Utilities.players.length * 0.4) - 1; i++) {
+			fascists += i;
+		}
 		for (int i = 0, n = fascists.length(); i < n; i++) {
 			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
 			getMap().put(Utilities.players[fas], 100.0);
@@ -37,11 +42,10 @@ public class Fascist extends Player{
 
 		List<AID> listOfFas = new ArrayList<>();
 
-		for (Entry<AID, Double> entry : map.entrySet()) 
+		for (Entry<AID, Double> entry : map.entrySet()) {
 			if (entry.getValue().equals(100.0) && entry.getKey() != getAID())
 				listOfFas.add(entry.getKey());
-
-
+		}
 		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
 
 		return listOfFas.get(index);
@@ -53,8 +57,8 @@ public class Fascist extends Player{
 		if (presidentValue == 100 && chancellorValue == 100)
 			return true;
 
-		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
-		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
+		int fascistPolicies = super.getPoliciesFromBoard(Utilities.LIBERAL_POLICIES); 
+		int liberalPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
 
 		//president liberal and chancellor fascist
 		if (presidentValue == 0 && chancellorValue == 100) {

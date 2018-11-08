@@ -18,16 +18,15 @@ public class Hitler extends Player {
 		for (int i = 0; i < Utilities.players.length; i++)
 			getMap().put(Utilities.players[i], 60.0);
 		getMap().replace(Utilities.players[getIndex()],  100.0);
-		System.out.println(getAID().getLocalName() + ": " + type);
+		System.out.println(getAID().getLocalName() + " as HITLER: " + type);
 	}
 
 	public AID chooseChancellor() {
+		System.out.println("HITLER CHOOSE CHANCELOR");
 		HashMap<AID, Double> listOfLib = new HashMap<AID, Double>();
-		System.out.println("CHOOSE CHANCELOR HITLER");
 		for (Entry<AID, Double> entry : map.entrySet())
 			if (entry.getKey() != getAID())
 				listOfLib.put(entry.getKey(), entry.getValue());
-		System.out.println("CHOOSE CHANCELOR HITLER");
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
 
@@ -36,22 +35,22 @@ public class Hitler extends Player {
 
 		//both are fascists or inconclusive
 		if ( (presidentValue >= 65 && chancellorValue >= 65 )
-				|| (presidentValue == -1 && chancellorValue == -1))
+				|| (presidentValue == 60 && chancellorValue == 60))
 			return true;
 
-		int fascistPolicies = super.getPoliciesFromBoard("Fascist_Policies"); 
-		int liberalPolicies = super.getPoliciesFromBoard("Liberal_Policies"); 
+		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
+		int liberalPolicies = super.getPoliciesFromBoard(Utilities.LIBERAL_POLICIES); 
 
 
 		//president -1
-		if (presidentValue == -1) {
+		if (presidentValue == 60) {
 			if (chancellorValue >= 65 && fascistPolicies - liberalPolicies >= 0)
 				return true;
 			return false;
 		}
 
 		//chancellor -1
-		if (chancellorValue == -1) {
+		if (chancellorValue == 60) {
 			if (presidentValue >= 65)
 				return true;
 			if (presidentValue < 65 && fascistPolicies - liberalPolicies >= 3)
