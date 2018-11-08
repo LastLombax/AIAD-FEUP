@@ -18,15 +18,15 @@ public class Utilities {
 	 * Enum that represents the state/phase of the game
 	 */
 	public enum State {
-		Setup, Delegation, Election, PolicySelection;
+		Setup, Player_info,  Delegation, Election, PolicySelection;
 	}
 
-	
-	
 	public static State currentState = State.Setup;
 
 	
 	public static String READY = "READY";
+	public static String PLAYER_INFO = "Player_info";
+
 	public static String REGISTER_FASCIST = "Register_Fascist";
 	public static String REGISTER_OTHERS = "Register_Others";
 	public static String PRESIDENT = "President";
@@ -41,7 +41,6 @@ public class Utilities {
 	public static String Liberal_Card = "L";
 	public static String Fascist_Card = "F";
 
-	public static AID[] players;
 	public static int numberPlayers = 7;
 
 

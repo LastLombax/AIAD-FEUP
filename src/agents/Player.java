@@ -1,8 +1,14 @@
 package agents;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
+
+import org.omg.CosNaming.IstringHelper;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -17,7 +23,7 @@ import utilities.Utilities.State;
 
 public class Player extends Agent {
 
-	HashMap<AID, Double> map = new HashMap<AID, Double>(); // double is the probability of being of the same faction
+	ConcurrentHashMap<String, Double> map = new ConcurrentHashMap<String, Double>(); // double is the probability of being of the same faction
 
 	AID board;
 
@@ -26,6 +32,9 @@ public class Player extends Agent {
 	protected String type = null;
 
 	int index = 0;
+
+	protected AID[] players;
+
 
 
 	public void setup() {
@@ -40,16 +49,19 @@ public class Player extends Agent {
 	 * Class to manage all messages from the Board during the game
 	 */
 	class MessageFromBoard extends CyclicBehaviour{
-		AID chancellor = null;
+		String chancellor = null;
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
 				switch (Utilities.currentState) {
 				case Setup:
+					//this.dealSetup(msg);
+					break;
+				case Player_info:
 					this.dealSetup(msg);
 					break;
-				case Delegation :
+				case Delegation:
 					this.dealDelegation(msg);
 					break;
 				case Election :
@@ -101,20 +113,38 @@ public class Player extends Agent {
 
 		}
 
-		private void dealSetup(ACLMessage msg){
+		private void sendCardsToChancellor(String chancellor2, String newCards) {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void sendBoardInfoReady(int sizeMap) {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(board);
+			msg.setOntology(Utilities.PLAYER_INFO);
+			msg.setContent(sizeMap +"");
+			send(msg);
+		}
+
+		public void dealSetup(ACLMessage msg){
 			if(msg.getOntology().equals(Utilities.REGISTER_FASCIST)) {
 				registerFascists(msg.getContent());
+				sendBoardInfoReady(map.size());
 			}
 			else if(msg.getOntology().equals(Utilities.REGISTER_OTHERS)) {
 				registerOthers();
+				sendBoardInfoReady(map.size());
 			}
 		}
 
 		private void dealDelegation(ACLMessage msg) {
-			if(msg.getOntology().equals(Utilities.PRESIDENT)) {
+			if(msg.getOntology().equals(Utilities.PRESIDENT)) {				
+				for (Entry<String, Double> entry : map.entrySet())
+					System.out.println(entry.getKey() + " > " + entry.getValue());				
+
 				chancellor = chooseChancellor();
-				System.out.println("Chancellor: " + chancellor.getLocalName());
-				startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+				System.out.println("Chancellor: " + chancellor);
+				startElection(chancellor, this.getAgent().getLocalName());
 			}
 
 		}
@@ -136,6 +166,9 @@ public class Player extends Agent {
 
 	}
 
+	public void setPlayers(AID[] players) {
+		this.players = players;
+	}
 
 	public void enterNextTurn() {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
@@ -144,6 +177,7 @@ public class Player extends Agent {
 		send(msg);
 
 	}
+
 
 
 	/**
@@ -155,21 +189,22 @@ public class Player extends Agent {
 		String pres = msgContent[0];
 		String chanc= msgContent[1];
 
-		for (int i = 0; i < Utilities.players.length; i++) {
-			String playerName = Utilities.players[i].getLocalName();
+		for (int i = 0; i < players.length; i++) {
+			String playerName = players[i].getLocalName();
 			if (playerName.equals(pres)) {
-				president = Utilities.players[i];	
+				president = players[i];	
 				break;
 			}
 		}
 
-		for (int i = 0; i < Utilities.players.length; i++) {
-			String playerName = Utilities.players[i].getLocalName();
+		for (int i = 0; i < players.length; i++) {
+			String playerName = players[i].getLocalName();
 			if (playerName.equals(chanc)) {
-				chancellor = Utilities.players[i];
+				chancellor = players[i];
 				break;
 			}
 		}
+
 	}
 
 
@@ -256,7 +291,7 @@ public class Player extends Agent {
 	 */
 	public Boolean voteForElection(String candidates) {
 
-		HashMap<AID, Double> sortedMap = (HashMap<AID, Double>) Utilities.sortByValue(map);
+		HashMap<String, Double> sortedMap = (HashMap<String, Double>) Utilities.sortByValue(map);
 
 		String[] cand = candidates.split(","); 
 
@@ -265,11 +300,11 @@ public class Player extends Agent {
 
 		Double presidentValue = 0.0, chancellorValue = 0.0;
 
-		for (Entry<AID, Double> entry : sortedMap.entrySet()) {
+		for (Entry<String, Double> entry : sortedMap.entrySet()) {
 
-			if (entry.getKey().getLocalName().equals(president))	
+			if (entry.getKey().equals(president))	
 				presidentValue = entry.getValue();
-			if (entry.getKey().getLocalName().equals(chancellor))
+			if (entry.getKey().equals(chancellor))
 				chancellorValue = entry.getValue();		
 		}
 
@@ -363,15 +398,11 @@ public class Player extends Agent {
 
 
 	/**
-	 * Returns the index of the Agent from the array on Utilities.Utilities.java
+	 * Returns the index of the Agent from the array on 
 	 * @return position in the array
 	 */
 	public int getIndex() {
-		for (int i = 0; i < Utilities.players.length; i++) 		
-			if (Utilities.players[i].equals(getAID()))
-				return i;
-
-		return -1;
+		return index;
 	}
 
 	/**
@@ -386,7 +417,7 @@ public class Player extends Agent {
 	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
 	 * @return map
 	 */
-	public HashMap<AID, Double> getMap(){
+	public ConcurrentHashMap<String, Double> getMap(){
 		return map;
 	}
 
@@ -402,24 +433,41 @@ public class Player extends Agent {
 		Double presidentValue = null;
 		Double chancellorValue = null;
 
+
+		System.out.println("empty on update: " + map.isEmpty());
+
 		// O map.get(president) não está a funcionar e isto também não
-		for (Entry<AID, Double> entry : map.entrySet()) 
-			if (entry.getKey().getLocalName().equals(president.getLocalName()))
+		for (Entry<String, Double> entry : map.entrySet()) {
+			//System.out.println("playerRunning: "+ getAID().getLocalName() + " -> key: "  + entry.getKey().getLocalName() + "; value: " + entry.getValue());
+			if (president.equals(entry.getKey())) {
+
 				presidentValue = entry.getValue();
+				break;
+			}
+		}
 
-		for (Entry<AID, Double> entry : map.entrySet()) 
-			if (entry.getKey().getLocalName().equals(chancellor.getLocalName()))
+		if (presidentValue == null) {
+			System.out.println("I suck: "+ getAID().getLocalName());
+		}
+
+		//presidentValue = map.get(president);
+
+		System.out.println("President value: " + presidentValue);
+
+
+		//	for (Entry<AID, Double> entry : map.entrySet()) 
+		/*		if (entry.getKey().getLocalName().equals(chancellor.getLocalName()))
 				chancellorValue = entry.getValue();
+		 */
 
-
-		System.out.println(presidentValue);
-		if (presidentValue < 65.0 && president.equals(this.getAID())) 
+		//System.out.println(presidentValue);
+		/*if (presidentValue < 65.0 && president.equals(this.getAID())) 
 			updateInformationOnPresident(chancellorCards, card, presidentValue);
 
 
 		if (chancellorValue < 65.0 && chancellor.equals(this.getAID())) 
 			updateInformationOnChancellor(chancellorCards, card, chancellorValue);
-		
+		 */
 
 	}
 
@@ -455,16 +503,35 @@ public class Player extends Agent {
 	 * @param fascists String that indicates who is a fascist and who is hitler
 	 */
 	public void registerFascists(String string) {};
+	
 
 	/**
 	 * Registers information about all players. Send to Liberals and Hitler
 	 */
-	public void registerOthers() {};
+	public void registerOthers() {
 
+		for (int i = 0; i < players.length; i++)
+			getMap().put("Player_" + i, 50.0);
+
+		getMap().replace(this.getLocalName(), 100.0);
+
+	}
 	/**
 	 * Chooses the chancellor 
 	 * @return Returns the chosen chancellor
 	 */
-	public AID chooseChancellor() {return null;};
+	public String chooseChancellor() {	
+
+		HashMap<String, Double> listOfFab = new HashMap<String, Double>();
+
+		for (Entry<String, Double> entry : map.entrySet())
+			if ((entry.getValue() >= 65 || entry.getValue() == 50 ))
+				listOfFab.put(entry.getKey(), entry.getValue());
+
+		listOfFab.remove(getAID().getLocalName());
+
+
+		return Collections.max(listOfFab.entrySet(), Map.Entry.comparingByValue()).getKey();
+	}	
 
 }

@@ -2,6 +2,8 @@ package agents;
 
 import java.util.LinkedList;
 import java.util.Queue;
+
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
@@ -15,6 +17,7 @@ import utilities.Utilities.State;
 public class Board extends Agent {
 
 	private int readyPlayers = 0;
+	private int infoPlayers = 0;
 
 	private int fascistPolicies = 0;
 	private int liberalPolicies = 0;
@@ -26,6 +29,11 @@ public class Board extends Agent {
 
 	Queue<String> deck = new LinkedList<>();
 	String cardsInPlay;
+	private AID[] players;
+
+	public void setPlayers(AID[] players) {
+		this.players = players;
+	}
 
 	public void setup() {
 		addToDF();
@@ -38,13 +46,13 @@ public class Board extends Agent {
 	 */
 	public void setPresident() {
 
-		if (currentPresident == Utilities.players.length - 1)
+		if (currentPresident == players.length - 1)
 			currentPresident = 0;
 		else
 			currentPresident++;
-		System.out.println("President " + Utilities.players[currentPresident].getLocalName());
+		System.out.println("President " + players[currentPresident].getLocalName());
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.addReceiver(Utilities.players[currentPresident]);
+		msg.addReceiver(players[currentPresident]);
 		msg.setPerformative(ACLMessage.INFORM);
 		msg.setOntology(Utilities.PRESIDENT);
 		send(msg);
@@ -75,21 +83,19 @@ public class Board extends Agent {
 	private void startGame() {
 		System.out.println("THE GAME HAS BEGUN");
 		createCards();
+		Utilities.currentState = State.Player_info;
 		sendInfoToFascists();
-		Utilities.shuffleArray(Utilities.players);
 		sendInfoToRest();
-		startDelegacy();
 	}
 
 	/**
 	 * Begins delegacy by changing the state and setting the president
 	 */
 	private void startDelegacy() {
-		
+		Utilities.currentState = State.Delegation;
 		System.out.println("Fascist Policies: " + fascistPolicies);
 		System.out.println("Liberal Policies: " + liberalPolicies);
-		
-		Utilities.currentState = State.Delegation;
+
 		setPresident();
 
 	}
@@ -109,6 +115,10 @@ public class Board extends Agent {
 				case Setup:
 					if(this.verifySetup(msg)) 
 						startGame();
+					break;
+				case Player_info:
+					if(this.verifyInfo(msg)) 
+						startDelegacy();
 					break;
 				case Delegation :
 					switch (msg.getOntology()) {
@@ -174,6 +184,21 @@ public class Board extends Agent {
 
 		}
 
+		private boolean verifyInfo(ACLMessage msg) {
+			
+			if(msg.getOntology().equals(Utilities.PLAYER_INFO)) {
+				if (Integer.parseInt(msg.getContent() ) != Utilities.numberPlayers) {
+					ACLMessage reply = new ACLMessage(ACLMessage.REQUEST);
+					reply.setOntology(Utilities.REGISTER_FASCIST);
+					reply.addReceiver(msg.getSender());
+					send(reply);
+				}
+				else
+					infoPlayers++;
+			}
+			return (infoPlayers == Utilities.numberPlayers);
+		}
+
 		private boolean verifySetup(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.READY))
 				readyPlayers++;
@@ -201,15 +226,15 @@ public class Board extends Agent {
 			String[] msgContent = candidates.split(","); 
 			String chancellor = msgContent[1];
 
-			for (int i = 0; i < Utilities.players.length; i++)
-				if (Utilities.players[i].getLocalName().equals(chancellor)) 
+			for (int i = 0; i < players.length; i++)
+				if (players[i].getLocalName().equals(chancellor)) 
 					currentChancellor = i;
 
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 			msg.setContent(candidates);
 			msg.setOntology(Utilities.ELECTION);
-			for (int i = 0; i < Utilities.players.length; i++)
-				msg.addReceiver(Utilities.players[i]);
+			for (int i = 0; i < players.length; i++)
+				msg.addReceiver(players[i]);
 			send(msg);	
 		}
 
@@ -306,9 +331,9 @@ public class Board extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setPerformative(ACLMessage.INFORM);
 		msg.setOntology(Utilities.DELEGACY);
-		msg.setContent(Utilities.players[currentPresident].getLocalName() + "," + Utilities.players[currentChancellor].getLocalName());
-		for (int i = 0; i < Utilities.players.length; i++)
-			msg.addReceiver(Utilities.players[i]);
+		msg.setContent(players[currentPresident].getLocalName() + "," + players[currentChancellor].getLocalName());
+		for (int i = 0; i < players.length; i++)
+			msg.addReceiver(players[i]);
 		send(msg);
 
 	}
@@ -318,7 +343,7 @@ public class Board extends Agent {
 	 */
 	public void sendCardsToPresident() {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.addReceiver(Utilities.players[currentPresident]);
+		msg.addReceiver(players[currentPresident]);
 		msg.setPerformative(ACLMessage.INFORM);
 		msg.setOntology(Utilities.DISCARD_CARD);
 		msg.setContent(getCards());
@@ -340,8 +365,8 @@ public class Board extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(content);
 		msg.setOntology(Utilities.NEW_POLICY);
-		for (int i = 0; i < Utilities.players.length; i++)
-			msg.addReceiver(Utilities.players[i]);
+		for (int i = 0; i < players.length; i++)
+			msg.addReceiver(players[i]);
 		send(msg);
 	}
 
@@ -358,8 +383,8 @@ public class Board extends Agent {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setContent(policy);
 		msg.setOntology(Utilities.NEW_POLICY_ELECTION);
-		for (int i = 0; i < Utilities.players.length; i++)
-			msg.addReceiver(Utilities.players[i]);
+		for (int i = 0; i < players.length; i++)
+			msg.addReceiver(players[i]);
 		send(msg);
 	}
 
@@ -385,14 +410,29 @@ public class Board extends Agent {
 	 * hold this information
 	 */
 	private void sendInfoToFascists() {
+		
 		String fascists = "";
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		int i = 0;
-		for (; i < (int) Math.ceil(Utilities.players.length * 0.4) - 1; i++) {
-			msg.addReceiver(Utilities.players[i]);
-			fascists += i;
+		int numberFascist = (int) Math.ceil(players.length * 0.4) - 1;
+		for (int j = 0; j < players.length; j++) {
+			String[] playerInfo = players[j].getLocalName().split("_");
+			int number = Integer.parseInt(playerInfo[1]);
+			if(number == numberFascist) {
+				fascists += players[j].getLocalName() + ";";
+				break;
+			}
 		}
-		fascists += i;
+
+		for (int j = 0; j < players.length; j++) {
+			String[] playerInfo = players[j].getLocalName().split("_");
+			int number = Integer.parseInt(playerInfo[1]);
+			if(number >= 0 && number < numberFascist) {
+				msg.addReceiver(players[j]);
+				fascists += players[j].getLocalName() + ";";
+			}
+		}
+		fascists = fascists.substring(0, fascists.length() - 1);
+
 		msg.setOntology(Utilities.REGISTER_FASCIST);
 		msg.setContent(fascists);
 		send(msg);
@@ -403,8 +443,16 @@ public class Board extends Agent {
 	 */
 	private void sendInfoToRest() {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-		for (int i = (int) Math.ceil(Utilities.players.length * 0.4) - 1; i < Utilities.numberPlayers; i++)
-			msg.addReceiver(Utilities.players[i]);
+		int numberFascist = (int) Math.ceil(players.length * 0.4) - 1;
+
+		for (int i = 0; i < Utilities.numberPlayers; i++) {
+			String[] playerInfo = players[i].getLocalName().split("_");
+			int number = Integer.parseInt(playerInfo[1]);
+			if(number >= numberFascist) 
+				msg.addReceiver(players[i]);
+			
+		}
+
 		msg.setOntology(Utilities.REGISTER_OTHERS);
 		send(msg);
 	}
