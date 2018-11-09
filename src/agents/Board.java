@@ -14,6 +14,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import jade.wrapper.StaleProxyException;
 import utilities.Utilities;
 import utilities.Utilities.State;
 
@@ -242,7 +243,6 @@ public class Board extends Agent {
 	}
 
 	private void gameOver() {
-
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setOntology(Utilities.GAME_OVER);
 		if (this.fascistPolicies == 6)
@@ -258,9 +258,11 @@ public class Board extends Agent {
 			msg.addReceiver(players[i]);
 
 		send(msg);
-
 		doDelete();
-
+	}
+	
+	public void takeDown() {
+		System.exit(0);
 	}
 
 	class startGame extends OneShotBehaviour{
@@ -278,8 +280,6 @@ public class Board extends Agent {
 			setPresident();
 			firstTurn = false;
 		}
-
-
 	}
 
 	public void sendPlayers(){

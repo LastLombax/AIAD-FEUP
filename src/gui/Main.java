@@ -11,6 +11,7 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import utilities.Utilities;
+import utilities.Utilities.State;
 
 public class Main {
 	
@@ -42,8 +43,6 @@ public class Main {
 			AgentController a = container.acceptNewAgent("Player_" + i, l);
 			a.start();
 		}
-		
-
 	}
 
 }

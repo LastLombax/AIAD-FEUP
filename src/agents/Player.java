@@ -13,6 +13,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import jade.wrapper.StaleProxyException;
 import utilities.Utilities;
 import utilities.Utilities.State;
 
@@ -133,10 +134,8 @@ public class Player extends Agent {
 		
 		private void dealGameOver(ACLMessage msg) {
 			System.out.println(getAID().getLocalName() + ": " +  msg.getContent());
-
 			doDelete();
 		}
-
 	}
 
 	/**
