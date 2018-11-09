@@ -59,6 +59,9 @@ public class Player extends Agent {
 				case PolicySelection :
 					this.dealPolicySelection(msg);
 					break;
+				case ForcedPolicySelection :
+					this.dealForcedPolicySelection(msg);
+					break;
 				case GameOver:
 					this.dealGameOver(msg);
 					break;
@@ -98,10 +101,6 @@ public class Player extends Agent {
 				System.out.println(getAID().getLocalName() + ":voted: " + vote);
 				sendVoteToBoard(vote);
 			}
-			else if(msg.getOntology().equals(Utilities.NEW_POLICY_ELECTION)) {
-				updateInformation(msg.getContent());
-				enterNextTurn();
-			}	
 		}
 		
 		private void dealPolicySelection(ACLMessage msg) {
@@ -125,6 +124,11 @@ public class Player extends Agent {
 				updateInformation(msg.getContent());
 				enterNextTurn();
 			}
+		}
+		
+		private void dealForcedPolicySelection(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.NEW_POLICY_ELECTION)) 
+				enterNextTurn();
 		}
 		
 		private void dealGameOver(ACLMessage msg) {

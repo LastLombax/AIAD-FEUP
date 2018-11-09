@@ -1,6 +1,8 @@
 package agents;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import jade.core.AID;
@@ -26,11 +28,15 @@ public class Board extends Agent {
 	private int currentChancellor;
 
 	private int electionTracker = 0;
+	
+	public boolean firstTurn = true;
 
 	private  AID[] players = new AID[Utilities.numberPlayers];
 	private String[] roles = new String[Utilities.numberPlayers];
 
 	Queue<String> deck = new LinkedList<>();
+	Queue<String> discardDeck = new LinkedList<>();
+
 	String cardsInPlay;
 
 	public void setup() {
@@ -43,11 +49,14 @@ public class Board extends Agent {
 	 * Sets the president of the turn
 	 */
 	public void setPresident() {
-
+		
+		for (int i = 0; i < players.length; i++)
+			System.out.println(players[i].getLocalName() + " on position " + i);
 		if (currentPresident == players.length - 1)
 			currentPresident = 0;
 		else
-			currentPresident++;
+			currentPresident++;		
+
 		System.out.println("President " + players[currentPresident].getLocalName());
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		for(int i = 0; i < Utilities.numberPlayers; i++) {
@@ -65,6 +74,14 @@ public class Board extends Agent {
 	 * @return cards
 	 */
 	public String getCards() {
+		if (deck.size() < 3) {
+			deck.addAll(discardDeck);
+			while(!discardDeck.isEmpty())
+				discardDeck.poll();
+			
+			Collections.shuffle((List<?>) deck);
+		}
+			
 		cardsInPlay = deck.poll() + deck.poll() + deck.poll();
 		return cardsInPlay;
 	}
@@ -74,8 +91,8 @@ public class Board extends Agent {
 	 * @param discarded string representing the two discarded cards
 	 */
 	public void returnDiscardedCards(String discarded) {
-		deck.add(discarded.substring(0, 1));
-		deck.add(discarded.substring(1));
+		discardDeck.add(discarded.substring(0, 1));
+		discardDeck.add(discarded.substring(1));
 	}
 
 	/**
@@ -91,7 +108,6 @@ public class Board extends Agent {
 				case Setup:
 					if(this.verifySetup(msg))
 						startGame();
-
 					break;
 				case Delegation :
 					this.dealDelegation(msg);
@@ -102,6 +118,9 @@ public class Board extends Agent {
 				case PolicySelection :
 					this.dealPolicySelection(msg);
 					break;
+				case ForcedPolicySelection:
+					this.dealForcedSelection(msg);
+					break;					
 				default:
 					break;
 				}
@@ -110,6 +129,8 @@ public class Board extends Agent {
 				block();
 
 		}
+
+	
 
 		private boolean verifySetup(ACLMessage msg) {
 			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology() + "    " + msg.getContent());
@@ -190,6 +211,12 @@ public class Board extends Agent {
 				}
 			}
 		}
+		
+		private void dealForcedSelection(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.NEXT_TURN)) 
+				if(this.verifyNextTurn(msg))
+					startGame();			
+		}
 
 		private boolean verifyNextTurn(ACLMessage msg) {
 			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology());
@@ -223,17 +250,16 @@ public class Board extends Agent {
 		else if (this.liberalPolicies == 5)
 			msg.setContent(Utilities.LIBERALS_WIN);
 		else
-			msg.setContent(Utilities.HITLED_ELECTED);
+			msg.setContent(Utilities.HITLER_ELECTED);
 
 		Utilities.currentState = State.GameOver;
-		
+
 		for(int i = 0; i < players.length; i++) 
 			msg.addReceiver(players[i]);
-		
-		send(msg);
-		
-		doDelete();
 
+		send(msg);
+
+		doDelete();
 
 	}
 
@@ -244,11 +270,13 @@ public class Board extends Agent {
 			sendPlayers();
 			doWait(150);
 			createCards();
-			Utilities.shuffleArray(players);
+			if (firstTurn)
+				Utilities.shuffleArray(players);
 			System.out.println("Fascist Policies: " + fascistPolicies);
 			System.out.println("Liberal Policies: " + liberalPolicies);			
 			Utilities.currentState = State.Delegation;
 			setPresident();
+			firstTurn = false;
 		}
 
 
@@ -298,6 +326,7 @@ public class Board extends Agent {
 		public void verifyElection(ACLMessage msg) {
 			switch(action(msg)) {
 			case 0: 
+				verifyHitler();
 				Utilities.currentState = State.PolicySelection;
 				informPlayersOfDelegacy();
 				sendCardsToPresident();
@@ -308,6 +337,7 @@ public class Board extends Agent {
 				addBehaviour(new startGame());
 				break;
 			case -2: //election tracker is 3
+				Utilities.currentState = State.ForcedPolicySelection;
 				setNewPolicyFromHead(deck.poll());
 				break;
 
@@ -335,12 +365,6 @@ public class Board extends Agent {
 				break;
 			}
 
-			if (electionTracker == 3) {
-				System.out.println("Election failed 3 times, the top card will be the new policy");
-				electionTracker = 0;
-				return -2;
-			}
-
 			if (ja + nein == Utilities.numberPlayers) { 
 				if (ja > nein)
 				{
@@ -352,6 +376,11 @@ public class Board extends Agent {
 					System.out.println("The Election has been refused");
 					electionTracker++;
 					System.out.println("Election Tracker: " + electionTracker);
+					if (electionTracker == 3) {
+						System.out.println("Election failed 3 times, the top card will be the new policy");
+						electionTracker = 0;
+						return -2;
+					}
 					return -1;
 				}
 
@@ -376,6 +405,13 @@ public class Board extends Agent {
 			msg.addReceiver(players[i]);
 		send(msg);
 	}
+
+	public void verifyHitler() {
+		if (roles[currentChancellor].equals("hitler") && fascistPolicies >= 3)
+			gameOver();
+		
+	}
+
 
 	/**
 	 * Sends the top 3 cards to the President

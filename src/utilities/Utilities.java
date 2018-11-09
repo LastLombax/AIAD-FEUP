@@ -18,7 +18,7 @@ public class Utilities {
 	 * Enum that represents the state/phase of the game
 	 */
 	public enum State {
-		Setup, Delegation, Election, PolicySelection, GameOver;
+		Setup, Delegation, Election, ForcedPolicySelection, PolicySelection, GameOver;
 	}
 
 	
@@ -55,7 +55,7 @@ public class Utilities {
 	public static String FASCISTS_WIN = "Fascists_Win";
 	public static String LIBERALS_WIN = "Liberals_Win";
 
-	public static String HITLED_ELECTED = "Hitled_Killed";
+	public static String HITLER_ELECTED = "Hitler_Elected";
 
 
 	/**
