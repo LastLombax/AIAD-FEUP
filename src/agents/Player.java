@@ -2,6 +2,7 @@ package agents;
 
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 import jade.core.AID;
 import jade.core.Agent;
@@ -17,11 +18,11 @@ import utilities.Utilities.State;
 
 public class Player extends Agent {
 
-	HashMap<AID, Double> map = new HashMap<AID, Double>(); // double is the probability of being of the same faction
+	ConcurrentHashMap<String, Double> map = new ConcurrentHashMap<String, Double>(); // double is the probability of being of the same faction
 
 	AID board;
 
-	AID president, chancellor;
+	String president, chancellor;
 	
 	private int fascistPolicies;
 
@@ -40,13 +41,14 @@ public class Player extends Agent {
 	 * Class to manage all messages from the Board during the game
 	 */
 	class MessageFromBoard extends CyclicBehaviour{
-		AID chancellor = null;
+		String chancellor = null;
 		@Override
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
 				switch (Utilities.currentState) {
 				case Setup:
+					this.dealSetup(msg);
 					break;
 				case Delegation :
 					this.dealDelegation(msg);
@@ -65,19 +67,24 @@ public class Player extends Agent {
 			}
 
 		}
+		
+		private void dealSetup(ACLMessage msg) {
+			if(msg.getOntology().equals(Utilities.REGISTER)) {
+				System.out.println(getAID().getLocalName() + ": Players: " + msg.getContent());
+				register(msg);
+			}
+		}
 
 		private void dealDelegation(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.PRESIDENT)) {
-				int p = Integer.parseInt(msg.getContent());
-				president = Utilities.players[p];
-				System.out.println(getAID().getLocalName() + ": PRESIDENT IS " + Utilities.players[p].getLocalName());
-				if(president.equals(Utilities.players[getIndex()])) {
+				president = msg.getContent();
+				System.out.println(getAID().getLocalName() + ": PRESIDENT IS " + president);
+				if(president.equals(getAID().getLocalName())) {
 					chancellor = chooseChancellor();
-					System.out.println(getAID().getLocalName() + ": Chancellor: " + chancellor.getLocalName());
-					startElection(chancellor.getLocalName(), this.getAgent().getLocalName());
+					System.out.println(getAID().getLocalName() + ": Chancellor: " + chancellor);
+					startElection(chancellor, this.getAgent().getLocalName());
 				}
 			}
-
 		}
 		
 		private void dealElection(ACLMessage msg) {
@@ -95,6 +102,7 @@ public class Player extends Agent {
 		
 		private void dealPolicySelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.DELEGACY)) {
+				System.out.println(getAID().getLocalName() + ": DELEGACY: " + msg.getContent());
 				updateDelegacy(msg.getContent());
 			}
 			else if(msg.getOntology().equals(Utilities.DISCARD_CARD)) {
@@ -103,7 +111,8 @@ public class Player extends Agent {
 				System.out.println(getAID().getLocalName() + ": Cards i selected: " + newCards);
 				sendCardsToChancellor(chancellor, newCards);
 			}
-			else if(msg.getOntology().equals("SelectFinalPolicy")) {
+			else if(msg.getOntology().equals(Utilities.SELECT_FINAL_POLICY)) {
+				System.out.println(getAID().getLocalName() +": SELECT FINAL POLICY from: " + msg.getContent());
 				String selectedPolicy = selectCardToPass(msg.getContent());
 				System.out.println("New Policy: " + selectedPolicy);
 				sendPolicyToBoard(msg.getContent(), selectedPolicy);
@@ -126,6 +135,7 @@ public class Player extends Agent {
 			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 			msg.addReceiver(board);
 			msg.setOntology(Utilities.READY);
+			msg.setContent(type);
 			send(msg);
 		}
 
@@ -147,24 +157,8 @@ public class Player extends Agent {
 	 */
 	public void updateDelegacy(String delegacy) {
 		String[] msgContent = delegacy.split(","); 
-		String pres = msgContent[0];
-		String chanc= msgContent[1];
-
-		for (int i = 0; i < Utilities.players.length; i++) {
-			String playerName = Utilities.players[i].getLocalName();
-			if (playerName.equals(pres)) {
-				president = Utilities.players[i];	
-				break;
-			}
-		}
-
-		for (int i = 0; i < Utilities.players.length; i++) {
-			String playerName = Utilities.players[i].getLocalName();
-			if (playerName.equals(chanc)) {
-				chancellor = Utilities.players[i];
-				break;
-			}
-		}
+		president = msgContent[0];
+		chancellor = msgContent[1];
 	}
 
 
@@ -190,7 +184,7 @@ public class Player extends Agent {
 	public void sendPolicyToBoard(String cards, String selectedPolicy) {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.addReceiver(board);
-		msg.setOntology("SelectedPolicy");
+		msg.setOntology(Utilities.SELECTED_POLICY);
 		msg.setContent(cards + "," + selectedPolicy);
 		send(msg);
 
@@ -233,11 +227,13 @@ public class Player extends Agent {
 	 * @param chancellor AID that represents the current Chancellor
 	 * @param cards String that contains two of the selected cards
 	 */
-	public void sendCardsToChancellor(AID chancellor, String cards) {
+	public void sendCardsToChancellor(String chancellor, String cards) {
+		AID c = new AID();
+		c.setLocalName(chancellor);
 		ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
-		msg.addReceiver(chancellor);
+		msg.addReceiver(c);
 		msg.setContent(cards);
-		msg.setOntology("SelectFinalPolicy");
+		msg.setOntology(Utilities.SELECT_FINAL_POLICY);
 		send(msg);
 	};
 
@@ -249,9 +245,7 @@ public class Player extends Agent {
 	 * @return
 	 */
 	public Boolean voteForElection(String candidates) {
-
-		HashMap<AID, Double> sortedMap = (HashMap<AID, Double>) Utilities.sortByValue(map);
-
+		HashMap<String, Double> sortedMap = (HashMap<String, Double>) Utilities.sortByValue(map);
 		String[] cand = candidates.split(","); 
 
 		String president = cand[0];
@@ -259,17 +253,15 @@ public class Player extends Agent {
 
 		Double presidentValue = 0.0, chancellorValue = 0.0;
 
-		for (Entry<AID, Double> entry : sortedMap.entrySet()) {
+		for (Entry<String, Double> entry : sortedMap.entrySet()) {
 
-			if (entry.getKey().getLocalName().equals(president))	
+			if (entry.getKey().equals(president))	
 				presidentValue = entry.getValue();
-			if (entry.getKey().getLocalName().equals(chancellor))
+			if (entry.getKey().equals(chancellor))
 				chancellorValue = entry.getValue();		
 		}
-
 		if (getAID().getLocalName().equals(president) || getAID().getLocalName().equals(chancellor))
 			return true;
-
 		return electionChoice(presidentValue, chancellorValue);
 	}
 
@@ -345,17 +337,6 @@ public class Player extends Agent {
 	}
 
 
-	/**
-	 * Returns the index of the Agent from the array on Utilities.Utilities.java
-	 * @return position in the array
-	 */
-	public int getIndex() {
-		for (int i = 0; i < Utilities.players.length; i++) 		
-			if (Utilities.players[i].equals(getAID()))
-				return i;
-
-		return -1;
-	}
 
 	/**
 	 * Returns type of player
@@ -369,7 +350,7 @@ public class Player extends Agent {
 	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
 	 * @return map
 	 */
-	public HashMap<AID, Double> getMap(){
+	public ConcurrentHashMap<String, Double> getMap(){
 		return map;
 	}
 
@@ -386,12 +367,12 @@ public class Player extends Agent {
 		Double chancellorValue = null;
 
 		// O map.get(president) n�o est� a funcionar e isto tamb�m n�o
-		for (Entry<AID, Double> entry : map.entrySet()) 
-			if (entry.getKey().getLocalName().equals(president.getLocalName()))
+		for (Entry<String, Double> entry : map.entrySet()) 
+			if (entry.getKey().equals(president))
 				presidentValue = entry.getValue();
 
-		for (Entry<AID, Double> entry : map.entrySet()) 
-			if (entry.getKey().getLocalName().equals(chancellor.getLocalName()))
+		for (Entry<String, Double> entry : map.entrySet()) 
+			if (entry.getKey().equals(chancellor))
 				chancellorValue = entry.getValue();
 
 
@@ -434,15 +415,12 @@ public class Player extends Agent {
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
 
 
-	/**
-	 * Registers information about all players. Send to Liberals and Hitler
-	 */
-	public void registerOthers() {};
+	public void register(ACLMessage msg) {}
 
 	/**
 	 * Chooses the chancellor 
 	 * @return Returns the chosen chancellor
 	 */
-	public AID chooseChancellor() {return null;};
+	public String chooseChancellor() {return null;};
 
 }

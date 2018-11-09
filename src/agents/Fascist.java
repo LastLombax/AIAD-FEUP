@@ -11,41 +11,42 @@ import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Fascist extends Player{
-	public AID hitler;
+	public String hitler;
 
 	public void setup() {
 		super.setup();	
-		super.type = "fascist";
+		super.type = Utilities.FASCIST;
 		System.out.println(getAID().getLocalName() + ": " + type);
-		registerFascists();
+	}
+	
+	public void register(ACLMessage msg) {
+		String[] players = msg.getContent().split(";");
+		for(int i = 0; i < players.length; i++) {
+			String[] player = players[i].split(":");
+			String role = player[1];
+			String localName = player[0];
+			if(role.equals(Utilities.FASCIST) || role.equals(Utilities.HITLER)) {
+				getMap().put(localName, 100.0);
+			}
+			else if(role.equals(Utilities.LIBERAL)) {
+				getMap().put(localName, 0.0);
+			}
+		}
 	}
 
-	public void registerFascists() {
-		String fascists = "";
-		for (int i = 0; i < (int) Math.ceil(Utilities.players.length * 0.4) - 1; i++) {
-			fascists += i;
-		}
-		for (int i = 0, n = fascists.length(); i < n; i++) {
-			int fas = Integer.parseInt(String.valueOf(fascists.charAt(i)));
-			getMap().put(Utilities.players[fas], 100.0);
-		}
-		hitler = Utilities.players[fascists.length()];
-		for (int i = fascists.length(); i < Utilities.players.length; i++) {
-			getMap().put(Utilities.players[i], 0.0);
-		}			
-	}
-
-	public AID chooseChancellor() {
+	public String chooseChancellor() {
 		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
+		System.out.println("MapSize: " + map.size());
 		if (fascistPolicies >= 3) 
 			return hitler;
 
-		List<AID> listOfFas = new ArrayList<>();
+		List<String> listOfFas = new ArrayList<>();
 
-		for (Entry<AID, Double> entry : map.entrySet()) {
-			if (entry.getValue().equals(100.0) && entry.getKey() != getAID())
+		for (Entry<String, Double> entry : map.entrySet()) {
+			if (entry.getValue().equals(100.0) && entry.getKey() != getAID().getLocalName())
 				listOfFas.add(entry.getKey());
 		}
+		System.out.println("Size :" + listOfFas.size());
 		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
 
 		return listOfFas.get(index);

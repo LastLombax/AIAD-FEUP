@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ThreadLocalRandom;
 import jade.core.AID;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
 public class Liberal extends Player{
@@ -14,20 +15,28 @@ public class Liberal extends Player{
 
 	public void setup() {
 		super.setup();
-		super.type = "liberal";
-		for (int i = 0; i < Utilities.players.length; i++)
-			getMap().put(Utilities.players[i], 60.0);
-		getMap().replace(Utilities.players[getIndex()],  100.0);
+		super.type = Utilities.LIBERAL;
 		System.out.println(getAID().getLocalName() + ": " + type);
 	}
 	
-	public AID chooseChancellor() {
-		HashMap<AID, Double> listOfLib = new HashMap<AID, Double>();
-		for (Entry<AID, Double> entry : map.entrySet())
-			if (entry.getKey() != getAID())
+	public String chooseChancellor() {
+		HashMap<String, Double> listOfLib = new HashMap<String, Double>();
+		System.out.println("MapSize: " + map.size());
+		for (Entry<String, Double> entry : map.entrySet())
+			if (entry.getKey() != getAID().getLocalName())
 				listOfLib.put(entry.getKey(), entry.getValue());
-
+		System.out.println("Size :" + listOfLib.size());
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
+	}
+	
+	
+	public void register(ACLMessage msg) {
+		String[] players = msg.getContent().split(";");
+		for(int i = 0; i < players.length; i++) {
+			String[] player = players[i].split(":");
+			String localName = player[0];
+			map.put(localName, 60.0);
+		}
 	}
 
 

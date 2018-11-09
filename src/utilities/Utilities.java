@@ -25,10 +25,11 @@ public class Utilities {
 	
 	public static State currentState = State.Setup;
 
-	
+	public static String FASCIST = "fascist";
+	public static String LIBERAL = "liberal";
+	public static String HITLER = "hitler";
 	public static String READY = "READY";
-	public static String REGISTER_FASCIST = "Register_Fascist";
-	public static String REGISTER_OTHERS = "Register_Others";
+	public static String REGISTER= "Register";
 	public static String PRESIDENT = "President";
 	public static String DELEGACY = "Delegacy";
 	public static String ELECTION = "Election";
@@ -39,11 +40,12 @@ public class Utilities {
 	public static String LIBERAL_POLICIES = "Liberal_Policies";
 	public static String ELECTION_BEGIN = "Election_Begin";
 	public static String ELECTION_VOTE = "Election_Vote";
+	public static String SELECT_FINAL_POLICY = "SelectFinalPolicy";
+	public static String SELECTED_POLICY = "SelectedPolicy";
 	
 	public static String LIBERAL_CARD = "L";
 	public static String FASCIST_CARD = "F";
 
-	public static AID[] players;
 	public static int numberPlayers = 7;
 
 
