@@ -18,7 +18,7 @@ public class Utilities {
 	 * Enum that represents the state/phase of the game
 	 */
 	public enum State {
-		Setup, Delegation, Election, PolicySelection;
+		Setup, Delegation, Election, PolicySelection, GameOver;
 	}
 
 	
@@ -27,14 +27,16 @@ public class Utilities {
 
 	public static String FASCIST = "fascist";
 	public static String LIBERAL = "liberal";
-	public static String HITLER = "hitler";
+	public static String HITLER = "hitler";	
 	public static String READY = "READY";
+	
+	//Ontologies
 	public static String REGISTER= "Register";
 	public static String PRESIDENT = "President";
 	public static String DELEGACY = "Delegacy";
 	public static String ELECTION = "Election";
-	public static String NEW_POLICY = "NewPolicy";
 	public static String DISCARD_CARD= "DiscardCard";
+	public static String NEW_POLICY = "NewPolicy";
 	public static String NEW_POLICY_ELECTION = "NewPolicyElection";
 	public static String FASCIST_POLICIES = "Fascist_Policies";
 	public static String LIBERAL_POLICIES = "Liberal_Policies";
@@ -42,11 +44,18 @@ public class Utilities {
 	public static String ELECTION_VOTE = "Election_Vote";
 	public static String SELECT_FINAL_POLICY = "SelectFinalPolicy";
 	public static String SELECTED_POLICY = "SelectedPolicy";
+	public static String NEXT_TURN = "NextTurn";
+	public static String GAME_OVER = "GameOver";
 	
 	public static String LIBERAL_CARD = "L";
 	public static String FASCIST_CARD = "F";
 
 	public static int numberPlayers = 7;
+
+	public static String FASCISTS_WIN = "Fascists_Win";
+	public static String LIBERALS_WIN = "Liberals_Win";
+
+	public static String HITLED_ELECTED = "Hitled_Killed";
 
 
 	/**

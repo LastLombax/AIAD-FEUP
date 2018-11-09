@@ -25,6 +25,9 @@ public class Hitler extends Player {
 		for (Entry<String, Double> entry : map.entrySet())
 			if (entry.getKey() != getAID().getLocalName())
 				listOfLib.put(entry.getKey(), entry.getValue());
+		
+		listOfLib.remove(getAID().getLocalName());
+
 		System.out.println("Size :" + listOfLib.size());
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
@@ -34,8 +37,10 @@ public class Hitler extends Player {
 		for(int i = 0; i < players.length; i++) {
 			String[] player = players[i].split(":");
 			String localName = player[0];
-			getMap().put(localName, 60.0);
+			getMap().put(localName, 50.0);
 		}
+		map.replace(getAID().getLocalName(), 100.00);
+
 	}
 
 
@@ -44,22 +49,22 @@ public class Hitler extends Player {
 
 		//both are fascists or inconclusive
 		if ( (presidentValue >= 65 && chancellorValue >= 65 )
-				|| (presidentValue == 60 && chancellorValue == 60))
+				|| (presidentValue == 50 && chancellorValue == 50))
 			return true;
 
 		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
 		int liberalPolicies = super.getPoliciesFromBoard(Utilities.LIBERAL_POLICIES); 
 
 
-		//president -1
-		if (presidentValue == 60) {
+		//president inconclusive
+		if (presidentValue == 50) {
 			if (chancellorValue >= 65 && fascistPolicies - liberalPolicies >= 0)
 				return true;
 			return false;
 		}
 
-		//chancellor -1
-		if (chancellorValue == 60) {
+		//chancellor inconclusive
+		if (chancellorValue == 50) {
 			if (presidentValue >= 65)
 				return true;
 			if (presidentValue < 65 && fascistPolicies - liberalPolicies >= 3)
@@ -88,18 +93,18 @@ public class Hitler extends Player {
 	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {
 
 		if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
-			value+=6.0;
+			value+=3.0;
 
 		else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
-			value+=9.0;
+			value+=8.0;
 
 		else {
-			if (card.equals(Utilities.LIBERAL_CARD))
+			if (card.equals(Utilities.FASCIST_CARD))
 				value+=10.0;
 			else
 				value-=20.0;			
 		}
-		if (value < -1)
+		if (value < 0)
 			value = 0.0;
 		else if (value > 100)
 			value = 100.0;
@@ -114,12 +119,15 @@ public class Hitler extends Player {
 		int countFascists = chancellorCards.length() - chancellorCards.replaceAll("F","").length();
 		int countLiberals = chancellorCards.length() - chancellorCards.replaceAll("L","").length();
 
-		if (countFascists == 1 && countLiberals == 1) //FL or LF
-			value+=30;
-		else
-			value-=30;			
+		if (countFascists == 1 && countLiberals == 1) { //FL or LF
+			if (card.equals(Utilities.LIBERAL_CARD))
+				value-=25;
+			else
+				value+=25;			
+		}
+			
 
-		if (value < -1)
+		if (value < 0)
 			value = 0.0;
 		else if (value > 100)
 			value = 100.0;

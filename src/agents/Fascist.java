@@ -32,6 +32,7 @@ public class Fascist extends Player{
 				getMap().put(localName, 0.0);
 			}
 		}
+		
 	}
 
 	public String chooseChancellor() {
@@ -46,6 +47,8 @@ public class Fascist extends Player{
 			if (entry.getValue().equals(100.0) && entry.getKey() != getAID().getLocalName())
 				listOfFas.add(entry.getKey());
 		}
+		listOfFas.remove(getAID().getLocalName());
+
 		System.out.println("Size :" + listOfFas.size());
 		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
 

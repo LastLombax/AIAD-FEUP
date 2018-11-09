@@ -58,6 +58,10 @@ public class Player extends Agent {
 					break;
 				case PolicySelection :
 					this.dealPolicySelection(msg);
+					break;
+				case GameOver:
+					this.dealGameOver(msg);
+					break;
 				default:
 					break;
 				}
@@ -67,7 +71,7 @@ public class Player extends Agent {
 			}
 
 		}
-		
+
 		private void dealSetup(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.REGISTER)) {
 				System.out.println(getAID().getLocalName() + ": Players: " + msg.getContent());
@@ -94,7 +98,7 @@ public class Player extends Agent {
 				System.out.println(getAID().getLocalName() + ":voted: " + vote);
 				sendVoteToBoard(vote);
 			}
-			else if(msg.getOntology().equals("NewPolicyElection")) {
+			else if(msg.getOntology().equals(Utilities.NEW_POLICY_ELECTION)) {
 				updateInformation(msg.getContent());
 				enterNextTurn();
 			}	
@@ -117,10 +121,16 @@ public class Player extends Agent {
 				System.out.println("New Policy: " + selectedPolicy);
 				sendPolicyToBoard(msg.getContent(), selectedPolicy);
 			}
-			else if(msg.getOntology().equals("NewPolicy")) {
+			else if(msg.getOntology().equals(Utilities.NEW_POLICY)) {
 				updateInformation(msg.getContent());
 				enterNextTurn();
 			}
+		}
+		
+		private void dealGameOver(ACLMessage msg) {
+			System.out.println(getAID().getLocalName() + ": " +  msg.getContent());
+
+			doDelete();
 		}
 
 	}
@@ -145,9 +155,8 @@ public class Player extends Agent {
 	public void enterNextTurn() {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(board);
-		msg.setOntology("NextTurn");
+		msg.setOntology(Utilities.NEXT_TURN);
 		send(msg);
-
 	}
 
 
@@ -304,6 +313,7 @@ public class Player extends Agent {
 		msg.addReceiver(board);
 		msg.setOntology(ontology);
 		send(msg);
+		
 		ACLMessage answer = null;
 		while(answer == null) {
 			answer = receive();
@@ -363,27 +373,15 @@ public class Player extends Agent {
 	 * @param card Card that was chosen by the chancellor
 	 */
 	public void updateInformation(String chancellorCards, String card) {
-		Double presidentValue = null;
-		Double chancellorValue = null;
-
-		// O map.get(president) n�o est� a funcionar e isto tamb�m n�o
-		for (Entry<String, Double> entry : map.entrySet()) 
-			if (entry.getKey().equals(president))
-				presidentValue = entry.getValue();
-
-		for (Entry<String, Double> entry : map.entrySet()) 
-			if (entry.getKey().equals(chancellor))
-				chancellorValue = entry.getValue();
-
-
-		System.out.println(presidentValue);
-		if (presidentValue < 65.0 && president.equals(this.getAID())) 
+		
+		Double presidentValue = map.get(president);
+		Double chancellorValue = map.get(chancellor);
+		
+		if (presidentValue < 65.0 && !president.equals(this.getAID().getLocalName())) 
 			updateInformationOnPresident(chancellorCards, card, presidentValue);
 
-
-		if (chancellorValue < 65.0 && chancellor.equals(this.getAID())) 
+		if (chancellorValue < 65.0 && !chancellor.equals(this.getAID().getLocalName())) 
 			updateInformationOnChancellor(chancellorCards, card, chancellorValue);
-		
 
 	}
 
