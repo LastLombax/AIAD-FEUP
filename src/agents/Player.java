@@ -1,7 +1,6 @@
 package agents;
 
 import java.util.HashMap;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 import jade.core.AID;
@@ -13,9 +12,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
-import jade.wrapper.StaleProxyException;
 import utilities.Utilities;
-import utilities.Utilities.State;
 
 public class Player extends Agent {
 
@@ -25,13 +22,14 @@ public class Player extends Agent {
 
 	String president, chancellor;
 	
-	private int fascistPolicies;
-
 	protected String type = null;
 
 	int index = 0;
 
-
+	/*
+	 * (non-Javadoc)
+	 * @see jade.core.Agent#setup()
+	 */
 	public void setup() {
 		this.doWait(250);
 		addBehaviour(new sendBoardReady());
@@ -76,6 +74,10 @@ public class Player extends Agent {
 
 		}
 
+		/**
+		 * Deals setup messages
+		 * @param msg Message received
+		 */
 		private void dealSetup(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.REGISTER)) {
 				System.out.println(getAID().getLocalName() + ": Players: " + msg.getContent());
@@ -83,6 +85,10 @@ public class Player extends Agent {
 			}
 		}
 
+		/**
+		 * Deals delegation messages
+		 * @param msg Message received
+		 */
 		private void dealDelegation(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.PRESIDENT)) {
 				president = msg.getContent();
@@ -95,6 +101,10 @@ public class Player extends Agent {
 			}
 		}
 		
+		/**
+		 * Deals election messages
+		 * @param msg Message received
+		 */
 		private void dealElection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.ELECTION)) {
 				System.out.println(getAID().getLocalName() +  ": ELECTION BEGIN of chancelor: " + msg.getContent());
@@ -104,6 +114,10 @@ public class Player extends Agent {
 			}
 		}
 		
+		/**
+		 * Deals policy selection messages
+		 * @param msg Message received
+		 */
 		private void dealPolicySelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.DELEGACY)) {
 				System.out.println(getAID().getLocalName() + ": DELEGACY: " + msg.getContent());
@@ -127,11 +141,18 @@ public class Player extends Agent {
 			}
 		}
 		
+		/**
+		 * Deals forcedPolicy messages when election tracker is 3
+		 * @param msg Message received
+		 */
 		private void dealForcedPolicySelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.NEW_POLICY_ELECTION)) 
 				enterNextTurn();
 		}
 		
+		/**
+		 * Ends the game for the Player
+		 */
 		private void dealGameOver(ACLMessage msg) {
 			System.out.println(getAID().getLocalName() + ": " +  msg.getContent());
 			doDelete();
@@ -154,7 +175,9 @@ public class Player extends Agent {
 
 	}
 
-
+	/**
+	 * Sends board a message to enter next turn
+	 */
 	public void enterNextTurn() {
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(board);
@@ -203,7 +226,6 @@ public class Player extends Agent {
 	}
 
 
-
 	/**
 	 * Messages the Board to start the election
 	 * @param chancellor Name of the chancellor
@@ -233,6 +255,7 @@ public class Player extends Agent {
 		send(msg);
 
 	}
+	
 
 	/**
 	 * Sends cards for the chancellor to choose from
@@ -295,15 +318,6 @@ public class Player extends Agent {
 		return cards;
 	}
 
-
-	/**
-	 * Selects a card to be discarded by the President
-	 * @param cards Cards to choose from
-	 * @return Two remaining cards
-	 */
-	public String selectCardToDiscard(String cards) {
-		return null;
-	}
 
 
 	/**
@@ -368,7 +382,6 @@ public class Player extends Agent {
 	}
 
 
-	//OVERRIDEN METHODS
 
 	/**
 	 * Updates information about the chancellor
@@ -388,6 +401,8 @@ public class Player extends Agent {
 
 	}
 
+
+	//OVERRIDEN METHODS
 
 	/**
 	 * Updates information regarding the player who is the chancellor
@@ -416,6 +431,10 @@ public class Player extends Agent {
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
 
 
+	/**
+	 * Registers information about the other players
+	 * @param msg
+	 */
 	public void register(ACLMessage msg) {}
 
 	/**
@@ -423,5 +442,14 @@ public class Player extends Agent {
 	 * @return Returns the chosen chancellor
 	 */
 	public String chooseChancellor() {return null;};
+	
+
+
+	/**
+	 * Selects a card to be discarded by the President
+	 * @param cards Cards to choose from
+	 * @return Two remaining cards
+	 */
+	public String selectCardToDiscard(String cards) {return null;}
 
 }

@@ -4,20 +4,25 @@ import agents.Board;
 import agents.Fascist;
 import agents.Hitler;
 import agents.Liberal;
-import jade.core.AID;
 import jade.core.Runtime;
 import jade.core.ProfileImpl;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
 import utilities.Utilities;
-import utilities.Utilities.State;
 
+/**
+ * Main Class
+ */
 public class Main {
 	
 	private static ContainerController container;
 	
-
+	/**
+	 * Begins the program, by creating all agents and starting them
+	 * @param args
+	 * @throws StaleProxyException
+	 */
 	public static void main(String[] args) throws StaleProxyException {
 		
 		int fascists = (int) Math.ceil(Utilities.numberPlayers*0.4);

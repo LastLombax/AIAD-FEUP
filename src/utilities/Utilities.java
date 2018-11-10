@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import jade.core.AID;
-
-
+/**
+ * Utilities class
+ */
 public class Utilities {
 
 	/**

@@ -14,7 +14,6 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
-import jade.wrapper.StaleProxyException;
 import utilities.Utilities;
 import utilities.Utilities.State;
 
@@ -40,13 +39,17 @@ public class Board extends Agent {
 
 	String cardsInPlay;
 
+	/*
+	 * (non-Javadoc)
+	 * @see jade.core.Agent#setup()
+	 */
 	public void setup() {
 		addToDF();
 		addBehaviour(new MessagesFromPlayers());
 	}
 
 
-	/**
+	/*
 	 * Sets the president of the turn
 	 */
 	public void setPresident() {
@@ -69,25 +72,9 @@ public class Board extends Agent {
 		send(msg);
 	}
 
-	/**
-	 * Gets the top three cards from the deck
-	 * 
-	 * @return cards
-	 */
-	public String getCards() {
-		if (deck.size() < 3) {
-			deck.addAll(discardDeck);
-			while(!discardDeck.isEmpty())
-				discardDeck.poll();
-			
-			Collections.shuffle((List<?>) deck);
-		}
-			
-		cardsInPlay = deck.poll() + deck.poll() + deck.poll();
-		return cardsInPlay;
-	}
+	
 
-	/**
+	/*
 	 * Returns discarded cards to back of deck queue
 	 * @param discarded string representing the two discarded cards
 	 */
@@ -96,7 +83,7 @@ public class Board extends Agent {
 		discardDeck.add(discarded.substring(1));
 	}
 
-	/**
+	/*
 	 * Class to manage all messages from players during the game
 	 */
 	class MessagesFromPlayers extends CyclicBehaviour {
@@ -131,8 +118,11 @@ public class Board extends Agent {
 
 		}
 
-	
-
+		/**
+		 * Verifies Setup messages
+		 * @param msg Message received
+		 * @return true if all players are ready
+		 */
 		private boolean verifySetup(ACLMessage msg) {
 			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology() + "    " + msg.getContent());
 			if(msg.getOntology().equals(Utilities.READY))
@@ -141,12 +131,14 @@ public class Board extends Agent {
 				roles[readyPlayers] = msg.getContent();
 				readyPlayers++;	
 			}
-
-
 			return (readyPlayers == Utilities.numberPlayers);
 		}
 
-		private boolean dealDelegation(ACLMessage msg) {
+		/**
+		 * Deals Delegation messages
+		 * @param msg Message received
+		 */
+		private void dealDelegation(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.ELECTION_BEGIN)) {
 				Utilities.currentState = State.Election;
 				System.out.println("BOARD: ELECTION BEGIN, Chancelor:  " + msg.getContent());
@@ -174,9 +166,12 @@ public class Board extends Agent {
 				reply.setContent(liberalPolicies + "");
 				send(reply);
 			}
-			return true;
 		}
 
+		/**
+		 * Deals Election messages
+		 * @param msg Message received
+		 */
 		private void dealElection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.ELECTION_BEGIN)) {
 				election = new Election(msg.getContent());
@@ -200,6 +195,10 @@ public class Board extends Agent {
 			}
 		}
 
+		/**
+		 * Deals Policy Selection messages
+		 * @param msg Message received
+		 */
 		private void dealPolicySelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.SELECTED_POLICY)) {
 				System.out.println("BOARD: SELECTED POLICY: " + msg.getContent());
@@ -213,12 +212,21 @@ public class Board extends Agent {
 			}
 		}
 		
+		/**
+		 * Deals Forced Selection messages
+		 * @param msg Message received
+		 */
 		private void dealForcedSelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.NEXT_TURN)) 
 				if(this.verifyNextTurn(msg))
 					startGame();			
 		}
 
+		/**
+		 * Deals messages to enter next turn
+		 * @param msg Message received
+		 * @return Returns true if all players are ready for the next turn
+		 */
 		private boolean verifyNextTurn(ACLMessage msg) {
 			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology());
 			if(msg.getOntology().equals(Utilities.NEXT_TURN))
@@ -231,6 +239,9 @@ public class Board extends Agent {
 		}
 	}
 
+	/**
+	 * Starts the game and verifies if game is over
+	 */
 	private void startGame() {
 
 		if (this.fascistPolicies == 6 || this.liberalPolicies == 5 ) {
@@ -242,6 +253,11 @@ public class Board extends Agent {
 		}
 	}
 
+	/**
+	 * Sends a message to all players
+	 * informing that the game is over and 
+	 * who won
+	 */
 	private void gameOver() {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setOntology(Utilities.GAME_OVER);
@@ -261,10 +277,16 @@ public class Board extends Agent {
 		doDelete();
 	}
 	
+	/**
+	 * Terminates the program
+	 */
 	public void takeDown() {
 		System.exit(0);
 	}
 
+	/**
+	 * Behaviour class to handle the beginning of the game
+	 */
 	class startGame extends OneShotBehaviour{
 		@Override
 		public void action() {
@@ -282,6 +304,9 @@ public class Board extends Agent {
 		}
 	}
 
+	/**
+	 * Sends information to players
+	 */
 	public void sendPlayers(){
 		String fascists = "";
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -297,8 +322,6 @@ public class Board extends Agent {
 
 	/**
 	 * Election class that manages the election phase
-	 * @author vitor
-	 *
 	 */
 	class Election{
 
@@ -323,6 +346,10 @@ public class Board extends Agent {
 			send(msg);	
 		}
 
+		/**
+		 * Verifies Election progress
+		 * @param msg
+		 */
 		public void verifyElection(ACLMessage msg) {
 			switch(action(msg)) {
 			case 0: 
@@ -331,12 +358,12 @@ public class Board extends Agent {
 				informPlayersOfDelegacy();
 				sendCardsToPresident();
 				break;
-			case 1: //election is still going
+			case 1: 
 				break;
 			case -1:
 				addBehaviour(new startGame());
 				break;
-			case -2: //election tracker is 3
+			case -2:
 				Utilities.currentState = State.ForcedPolicySelection;
 				setNewPolicyFromHead(deck.poll());
 				break;
@@ -349,8 +376,8 @@ public class Board extends Agent {
 		/**
 		 * Receives the vote from a Player
 		 * and proceeds with the election
-		 * @param msg
-		 * @return true if election has ended
+		 * @param msg Message received
+		 * @return 0 if election approved, 1 if ongoing, -1 if election not approved and -2 if election tracker is 3
 		 */
 		public int action(ACLMessage msg) {
 
@@ -406,6 +433,9 @@ public class Board extends Agent {
 		send(msg);
 	}
 
+	/**
+	 * Verifies if the chosen chancellor is hitler and if the number of fascist policies approved is >= 3
+	 */
 	public void verifyHitler() {
 		if (roles[currentChancellor].equals("hitler") && fascistPolicies >= 3)
 			gameOver();
@@ -463,6 +493,23 @@ public class Board extends Agent {
 		for (int i = 0; i < players.length; i++)
 			msg.addReceiver(players[i]);
 		send(msg);
+	}
+	
+	/**
+	 * Gets the top three cards from the deck
+	 * @return cards
+	 */
+	public String getCards() {
+		if (deck.size() < 3) {
+			deck.addAll(discardDeck);
+			while(!discardDeck.isEmpty())
+				discardDeck.poll();
+			
+			Collections.shuffle((List<?>) deck);
+		}
+			
+		cardsInPlay = deck.poll() + deck.poll() + deck.poll();
+		return cardsInPlay;
 	}
 
 	/**
