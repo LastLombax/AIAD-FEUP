@@ -17,7 +17,6 @@ public class Hitler extends Player {
 	}
 
 	public String chooseChancellor() {
-		System.out.println("MapSize: " + map.size());
 		HashMap<String, Double> listOfLib = new HashMap<String, Double>();
 		for (Entry<String, Double> entry : map.entrySet())
 			if (entry.getKey() != getAID().getLocalName())
@@ -25,7 +24,6 @@ public class Hitler extends Player {
 		
 		listOfLib.remove(getAID().getLocalName());
 
-		System.out.println("Size :" + listOfLib.size());
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
 	

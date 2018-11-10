@@ -35,7 +35,6 @@ public class Fascist extends Player{
 
 	public String chooseChancellor() {
 		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
-		System.out.println("MapSize: " + map.size());
 		if (fascistPolicies >= 3) {
 			return hitler;
 		}
@@ -48,7 +47,6 @@ public class Fascist extends Player{
 		}
 		listOfFas.remove(getAID().getLocalName());
 
-		System.out.println("Size :" + listOfFas.size());
 		int index = ThreadLocalRandom.current().nextInt(listOfFas.size());
 
 		return listOfFas.get(index);

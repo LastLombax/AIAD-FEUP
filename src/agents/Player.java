@@ -80,7 +80,6 @@ public class Player extends Agent {
 		 */
 		private void dealSetup(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.REGISTER)) {
-				System.out.println(getAID().getLocalName() + ": Players: " + msg.getContent());
 				register(msg);
 			}
 		}
@@ -92,10 +91,9 @@ public class Player extends Agent {
 		private void dealDelegation(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.PRESIDENT)) {
 				president = msg.getContent();
-				System.out.println(getAID().getLocalName() + ": PRESIDENT IS " + president);
 				if(president.equals(getAID().getLocalName())) {
 					chancellor = chooseChancellor();
-					System.out.println(getAID().getLocalName() + ": Chancellor: " + chancellor);
+					System.out.println("The Chancellor will be " + chancellor);
 					startElection(chancellor, this.getAgent().getLocalName());
 				}
 			}
@@ -107,9 +105,8 @@ public class Player extends Agent {
 		 */
 		private void dealElection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.ELECTION)) {
-				System.out.println(getAID().getLocalName() +  ": ELECTION BEGIN of chancelor: " + msg.getContent());
 				Boolean vote = voteForElection(msg.getContent());
-				System.out.println(getAID().getLocalName() + ":voted: " + vote);
+				System.out.println(getAID().getLocalName() + " voted: " + vote);
 				sendVoteToBoard(vote);
 			}
 		}
@@ -120,17 +117,15 @@ public class Player extends Agent {
 		 */
 		private void dealPolicySelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.DELEGACY)) {
-				System.out.println(getAID().getLocalName() + ": DELEGACY: " + msg.getContent());
 				updateDelegacy(msg.getContent());
 			}
 			else if(msg.getOntology().equals(Utilities.DISCARD_CARD)) {
-				System.out.println(getAID().getLocalName() + ": Cards passed to me: " + msg.getContent());
+				System.out.println("Cards passed to me: " + msg.getContent());
 				String newCards = selectCardToDiscard(msg.getContent());
-				System.out.println(getAID().getLocalName() + ": Cards i selected: " + newCards);
+				System.out.println("Cards I selected: " + newCards);
 				sendCardsToChancellor(chancellor, newCards);
 			}
 			else if(msg.getOntology().equals(Utilities.SELECT_FINAL_POLICY)) {
-				System.out.println(getAID().getLocalName() +": SELECT FINAL POLICY from: " + msg.getContent());
 				String selectedPolicy = selectCardToPass(msg.getContent());
 				System.out.println("New Policy: " + selectedPolicy);
 				sendPolicyToBoard(msg.getContent(), selectedPolicy);
