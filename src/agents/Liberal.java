@@ -24,10 +24,8 @@ public class Liberal extends Player{
 				listOfLib.put(entry.getKey(), entry.getValue());
 		System.out.println("Size :" + listOfLib.size());
 		listOfLib.remove(getAID().getLocalName());
-
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}
-
 
 	public void register(ACLMessage msg) {
 		String[] players = msg.getContent().split(";");
@@ -38,8 +36,6 @@ public class Liberal extends Player{
 		}
 		map.replace(getAID().getLocalName(), 100.00);
 	}
-
-
 
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
 		//both are liberals or inconclusive
@@ -89,7 +85,6 @@ public class Liberal extends Player{
 
 
 	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {
-
 		if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
 			value+=10.0;
 
@@ -106,7 +101,6 @@ public class Liberal extends Player{
 			value = 0.0;
 		else if (value > 100)
 			value = 100.0;
-
 		map.put(super.president, value);
 	}
 
@@ -140,7 +134,6 @@ public class Liberal extends Player{
 		else {
 			cards = cards.replaceFirst(Utilities.FASCIST_CARD, "");
 		}
-
 		return cards;
 	}
 

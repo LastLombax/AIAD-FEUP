@@ -23,20 +23,22 @@ public class Fascist extends Player{
 			String role = player[1];
 			String localName = player[0];
 			if(role.equals(Utilities.FASCIST) || role.equals(Utilities.HITLER)) {
+				if(role.equals(Utilities.HITLER))
+					hitler = localName;
 				getMap().put(localName, 100.0);
 			}
 			else if(role.equals(Utilities.LIBERAL)) {
 				getMap().put(localName, 0.0);
 			}
 		}
-		
 	}
 
 	public String chooseChancellor() {
 		int fascistPolicies = super.getPoliciesFromBoard(Utilities.FASCIST_POLICIES); 
 		System.out.println("MapSize: " + map.size());
-		if (fascistPolicies >= 3) 
+		if (fascistPolicies >= 3) {
 			return hitler;
+		}
 
 		List<String> listOfFas = new ArrayList<>();
 

@@ -311,8 +311,9 @@ public class Player extends Agent {
 		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
 			cards = cards.substring(1);
 		}
-		else if(getType().equals("fascist"))
+		else if(getType().equals("fascist") || getType().equals("hitler")) {
 			cards = cards.replace(Utilities.LIBERAL_CARD, "");
+		}
 		else 
 			cards = cards.replace(Utilities.FASCIST_CARD, "");
 		return cards;
@@ -443,7 +444,6 @@ public class Player extends Agent {
 	 */
 	public String chooseChancellor() {return null;};
 	
-
 
 	/**
 	 * Selects a card to be discarded by the President

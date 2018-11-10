@@ -294,13 +294,14 @@ public class Board extends Agent {
 			sendPlayers();
 			doWait(150);
 			createCards();
-			if (firstTurn)
+			if (firstTurn) {
 				Utilities.shuffleArray(players);
+				firstTurn = false;
+			}
 			System.out.println("Fascist Policies: " + fascistPolicies);
 			System.out.println("Liberal Policies: " + liberalPolicies);			
 			Utilities.currentState = State.Delegation;
 			setPresident();
-			firstTurn = false;
 		}
 	}
 
@@ -438,8 +439,7 @@ public class Board extends Agent {
 	 */
 	public void verifyHitler() {
 		if (roles[currentChancellor].equals("hitler") && fascistPolicies >= 3)
-			gameOver();
-		
+			gameOver();		
 	}
 
 
