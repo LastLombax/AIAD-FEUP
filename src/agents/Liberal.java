@@ -18,11 +18,9 @@ public class Liberal extends Player{
 
 	public String chooseChancellor() {
 		HashMap<String, Double> listOfLib = new HashMap<String, Double>();
-		System.out.println("MapSize: " + map.size());
 		for (Entry<String, Double> entry : map.entrySet())
 			if (entry.getKey() != getAID().getLocalName())
 				listOfLib.put(entry.getKey(), entry.getValue());
-		System.out.println("Size :" + listOfLib.size());
 		listOfLib.remove(getAID().getLocalName());
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}

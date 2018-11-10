@@ -54,14 +54,12 @@ public class Board extends Agent {
 	 */
 	public void setPresident() {
 		
-		for (int i = 0; i < players.length; i++)
-			System.out.println(players[i].getLocalName() + " on position " + i);
 		if (currentPresident == players.length - 1)
 			currentPresident = 0;
 		else
 			currentPresident++;		
 
-		System.out.println("President " + players[currentPresident].getLocalName());
+		System.out.println("The President is " + players[currentPresident].getLocalName());
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		for(int i = 0; i < Utilities.numberPlayers; i++) {
 			msg.addReceiver(players[i]);
@@ -124,7 +122,6 @@ public class Board extends Agent {
 		 * @return true if all players are ready
 		 */
 		private boolean verifySetup(ACLMessage msg) {
-			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology() + "    " + msg.getContent());
 			if(msg.getOntology().equals(Utilities.READY))
 			{
 				players[readyPlayers] = msg.getSender();
@@ -141,7 +138,8 @@ public class Board extends Agent {
 		private void dealDelegation(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.ELECTION_BEGIN)) {
 				Utilities.currentState = State.Election;
-				System.out.println("BOARD: ELECTION BEGIN, Chancelor:  " + msg.getContent());
+				System.out.println("The Election will begin");
+				
 				String ch = msg.getContent();
 				ACLMessage reply = new ACLMessage(ACLMessage.PROPOSE);
 				for(int i = 0; i < Utilities.numberPlayers; i++) {
@@ -201,7 +199,6 @@ public class Board extends Agent {
 		 */
 		private void dealPolicySelection(ACLMessage msg) {
 			if(msg.getOntology().equals(Utilities.SELECTED_POLICY)) {
-				System.out.println("BOARD: SELECTED POLICY: " + msg.getContent());
 				setNewPolicy(msg.getContent());
 			}
 			else if(msg.getOntology().equals(Utilities.NEXT_TURN)) {
@@ -228,13 +225,8 @@ public class Board extends Agent {
 		 * @return Returns true if all players are ready for the next turn
 		 */
 		private boolean verifyNextTurn(ACLMessage msg) {
-			System.out.println("Board: MESSAGE from:  " + msg.getSender().getLocalName() + "     " + msg.getOntology());
 			if(msg.getOntology().equals(Utilities.NEXT_TURN))
-			{
-				//players[readyPlayers] = msg.getSender();
-				//roles[readyPlayers] = msg.getContent();
 				readyPlayers++;	
-			}
 			return (readyPlayers == Utilities.numberPlayers);
 		}
 	}
@@ -290,7 +282,6 @@ public class Board extends Agent {
 	class startGame extends OneShotBehaviour{
 		@Override
 		public void action() {
-			System.out.println("THE GAME HAS BEGUN");
 			sendPlayers();
 			doWait(150);
 			createCards();
@@ -298,8 +289,8 @@ public class Board extends Agent {
 				Utilities.shuffleArray(players);
 				firstTurn = false;
 			}
-			System.out.println("Fascist Policies: " + fascistPolicies);
-			System.out.println("Liberal Policies: " + liberalPolicies);			
+			System.out.println("Number of Fascist Policies: " + fascistPolicies);
+			System.out.println("Number of Liberal Policies: " + liberalPolicies);			
 			Utilities.currentState = State.Delegation;
 			setPresident();
 		}
@@ -481,7 +472,6 @@ public class Board extends Agent {
 	 */
 	public void setNewPolicyFromHead(String policy) {	
 
-		System.out.println("POLICY AFTER TRACKER = 3: " + policy);
 		if (policy.equals(Utilities.FASCIST_CARD))
 			fascistPolicies++;
 		else if (policy.equals(Utilities.LIBERAL_CARD))
