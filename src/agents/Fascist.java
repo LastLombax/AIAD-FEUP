@@ -7,7 +7,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
+/**
+ * Class that extends Player and represents a Fascist in the game
+ */
 public class Fascist extends Player{
+	
 	public String hitler;
 
 	public void setup() {

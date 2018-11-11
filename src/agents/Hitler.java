@@ -7,8 +7,15 @@ import java.util.Map.Entry;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
+/**
+ * Class that extends Player and represents the Hitler in the game
+ */
 public class Hitler extends Player {
 
+
+	public Hitler(int randomNum) {
+		this.personality = randomNum;
+	}
 
 	public void setup() {
 		super.setup();
@@ -21,12 +28,12 @@ public class Hitler extends Player {
 		for (Entry<String, Double> entry : map.entrySet())
 			if (entry.getKey() != getAID().getLocalName())
 				listOfLib.put(entry.getKey(), entry.getValue());
-		
+
 		listOfLib.remove(getAID().getLocalName());
 
 		return Collections.max(listOfLib.entrySet(), Map.Entry.comparingByValue()).getKey();
 	}	
-	
+
 	public void register(ACLMessage msg) {
 		String[] players = msg.getContent().split(";");
 		for(int i = 0; i < players.length; i++) {
@@ -37,7 +44,6 @@ public class Hitler extends Player {
 		map.replace(getAID().getLocalName(), 100.00);
 
 	}
-
 
 
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {
@@ -82,23 +88,38 @@ public class Hitler extends Player {
 		//both are liberals
 		return false;
 	}
-	
-	
+
 
 	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {
+		if (personality == 0) {			
+			if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
+				value+=3.0;
 
-		if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
-			value+=3.0;
+			else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
+				value+=8.0;
 
-		else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
-			value+=8.0;
-
-		else {
-			if (card.equals(Utilities.FASCIST_CARD))
-				value+=10.0;
-			else
-				value-=20.0;			
+			else {
+				if (card.equals(Utilities.FASCIST_CARD))
+					value+=10.0;
+				else
+					value-=20.0;
+			}
 		}
+		else if (personality == 1) { //suspicious
+			if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
+				value-=2.0;
+
+			else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
+				value+=6.0;
+
+			else {
+				if (card.equals(Utilities.FASCIST_CARD))
+					value+=10.0;
+				else
+					value-=20.0;
+			}
+		}
+
 		if (value < 0)
 			value = 0.0;
 		else if (value > 100)
@@ -120,7 +141,7 @@ public class Hitler extends Player {
 			else
 				value+=25;			
 		}
-			
+
 
 		if (value < 0)
 			value = 0.0;
@@ -130,7 +151,7 @@ public class Hitler extends Player {
 		map.put(chancellor, value);
 
 	}
-	
+
 	public String selectCardToDiscard(String cards) {
 		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
 			cards = cards.substring(1);
@@ -139,7 +160,7 @@ public class Hitler extends Player {
 			cards = cards.replaceFirst(Utilities.LIBERAL_CARD, "");
 		}
 		return cards;	
-		
+
 	}
 
 

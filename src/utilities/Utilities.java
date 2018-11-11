@@ -19,9 +19,7 @@ public class Utilities {
 	 */
 	public enum State {
 		Setup, Delegation, Election, ForcedPolicySelection, PolicySelection, GameOver;
-	}
-
-	
+	}	
 	
 	public static State currentState = State.Setup;
 
@@ -50,13 +48,12 @@ public class Utilities {
 	public static String LIBERAL_CARD = "L";
 	public static String FASCIST_CARD = "F";
 
-	public static int numberPlayers = 7;
-
 	public static String FASCISTS_WIN = "Fascists_Win";
 	public static String LIBERALS_WIN = "Liberals_Win";
-
 	public static String HITLER_ELECTED = "Hitler_Elected";
 
+
+	public static int numberPlayers = 7;
 
 	/**
 	 * Shuffles an array
@@ -96,7 +93,5 @@ public class Utilities {
 		}
 		return result;
 	}
-
-
-
+	
 }

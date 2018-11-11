@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -17,29 +16,27 @@ import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 import utilities.Utilities.State;
 
+/**
+ * Class that represents the board.
+ * The Board manages the game loop, as well as all information regarding the game
+ * and messages to/from the players
+ */
 public class Board extends Agent {
 
 	private int readyPlayers = 0;
-
 	private int fascistPolicies = 0;
 	private int liberalPolicies = 0;
-
 	private int currentPresident = -1;
 	private int currentChancellor;
-
 	private int electionTracker = 0;
-	
-	public boolean firstTurn = true;
-
+	private boolean firstTurn = true;
 	private  AID[] players = new AID[Utilities.numberPlayers];
 	private String[] roles = new String[Utilities.numberPlayers];
+	private Queue<String> deck = new LinkedList<>();
+	private Queue<String> discardDeck = new LinkedList<>();
+	private String cardsInPlay;
 
-	Queue<String> deck = new LinkedList<>();
-	Queue<String> discardDeck = new LinkedList<>();
-
-	String cardsInPlay;
-
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see jade.core.Agent#setup()
 	 */
@@ -49,7 +46,7 @@ public class Board extends Agent {
 	}
 
 
-	/*
+	/**
 	 * Sets the president of the turn
 	 */
 	public void setPresident() {
@@ -72,8 +69,8 @@ public class Board extends Agent {
 
 	
 
-	/*
-	 * Returns discarded cards to back of deck queue
+	/**
+	 * Returns the discarded cards to the back of deck queue
 	 * @param discarded string representing the two discarded cards
 	 */
 	public void returnDiscardedCards(String discarded) {
@@ -289,6 +286,9 @@ public class Board extends Agent {
 				Utilities.shuffleArray(players);
 				firstTurn = false;
 			}
+			System.out.println();
+			System.out.println("--------------New Turn--------------");
+			System.out.println();
 			System.out.println("Number of Fascist Policies: " + fascistPolicies);
 			System.out.println("Number of Liberal Policies: " + liberalPolicies);			
 			Utilities.currentState = State.Delegation;
@@ -326,7 +326,7 @@ public class Board extends Agent {
 		 * @param candidates
 		 */
 		Election(String chancellor){
-			for (int i = 0; i < Utilities.numberPlayers; i++)
+			for (int i = 0; i < players.length; i++)
 				if (players[i].getLocalName().equals(chancellor)) 
 					currentChancellor = i;
 
@@ -447,7 +447,7 @@ public class Board extends Agent {
 		send(msg);		
 	}
 
-	/*
+	/**
 	 * Sets the passed policy from the chancellor
 	 */
 	public void setNewPolicy(String content) {		
@@ -467,7 +467,7 @@ public class Board extends Agent {
 		send(msg);
 	}
 
-	/*
+	/**
 	 * Sets the passed policy from the chancellor
 	 */
 	public void setNewPolicyFromHead(String policy) {	

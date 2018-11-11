@@ -14,6 +14,12 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
+/**
+ * Class that represents the Player
+ * The Player receives messages from the player and decides how to proceed
+ * during the game. It also manages messages from/to the board.
+ * Each in game player extends this class
+ */
 public class Player extends Agent {
 
 	ConcurrentHashMap<String, Double> map = new ConcurrentHashMap<String, Double>(); // double is the probability of being of the same faction
@@ -25,8 +31,11 @@ public class Player extends Agent {
 	protected String type = null;
 
 	int index = 0;
+	
+	int personality;
+	
 
-	/*
+	/**
 	 * (non-Javadoc)
 	 * @see jade.core.Agent#setup()
 	 */
@@ -46,38 +55,33 @@ public class Player extends Agent {
 			ACLMessage msg = receive();
 			if(msg != null) {
 				if(msg.getOntology().equals(Utilities.REGISTER)) {
-					System.out.println(getAID().getLocalName() + ": Players: " + msg.getContent());
 					register(msg);
 				}
 				else if(msg.getOntology().equals(Utilities.PRESIDENT)) {
 					president = msg.getContent();
-					System.out.println(getAID().getLocalName() + ": PRESIDENT IS " + president);
 					if(president.equals(getAID().getLocalName())) {
 						chancellor = chooseChancellor();
-						System.out.println(getAID().getLocalName() + ": Chancellor: " + chancellor);
+						System.out.println("The Chancellor will be " + chancellor);
 						startElection(chancellor, this.getAgent().getLocalName());
 					}
 				}
 				else if(msg.getOntology().equals(Utilities.ELECTION)) {
-					System.out.println(getAID().getLocalName() +  ": ELECTION BEGIN of chancelor: " + msg.getContent());
 					Boolean vote = voteForElection(msg.getContent());
-					System.out.println(getAID().getLocalName() + ":voted: " + vote);
+					System.out.println(getAID().getLocalName() + " voted " + vote);
 					sendVoteToBoard(vote);
 				}
 				else if(msg.getOntology().equals(Utilities.DELEGACY)) {
-					System.out.println(getAID().getLocalName() + ": DELEGACY: " + msg.getContent());
 					updateDelegacy(msg.getContent());
 				}
 				else if(msg.getOntology().equals(Utilities.DISCARD_CARD)) {
-					System.out.println(getAID().getLocalName() + ": Cards passed to me: " + msg.getContent());
+					System.out.println("Cards passed to " + getAID().getLocalName() + ": " + msg.getContent());
 					String newCards = selectCardToDiscard(msg.getContent());
-					System.out.println(getAID().getLocalName() + ": Cards i selected: " + newCards);
+					System.out.println("Cards selected by " +getAID().getLocalName() +": " + newCards);
 					sendCardsToChancellor(chancellor, newCards);
 				}
 				else if(msg.getOntology().equals(Utilities.SELECT_FINAL_POLICY)) {
-					System.out.println(getAID().getLocalName() +": SELECT FINAL POLICY from: " + msg.getContent());
 					String selectedPolicy = selectCardToPass(msg.getContent());
-					System.out.println("New Policy: " + selectedPolicy);
+					System.out.println("Card chosen by " + getAID().getLocalName() + ": " + selectedPolicy);
 					sendPolicyToBoard(msg.getContent(), selectedPolicy);
 				}
 				else if(msg.getOntology().equals(Utilities.NEW_POLICY)) {
@@ -306,24 +310,6 @@ public class Player extends Agent {
 
 
 	/**
-	 * Returns type of player
-	 * @return type
-	 */
-	public String getType() {
-		return type;
-	}
-
-	/**
-	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
-	 * @return map
-	 */
-	public ConcurrentHashMap<String, Double> getMap(){
-		return map;
-	}
-
-
-
-	/**
 	 * Updates information about the chancellor
 	 * @param chancellorCards Cards that the chancellor received
 	 * @param card Card that was chosen by the chancellor
@@ -340,23 +326,39 @@ public class Player extends Agent {
 			updateInformationOnChancellor(chancellorCards, card, chancellorValue);
 
 	}
+	
 
+	/**
+	 * Returns type of player
+	 * @return type
+	 */
+	public String getType() {
+		return type;
+	}
 
-	//OVERRIDEN METHODS
+	/**
+	 * Returns the HashMap of agents that maps a key Agent with a Probability of being of the same team
+	 * @return map
+	 */
+	public ConcurrentHashMap<String, Double> getMap(){
+		return map;
+	}
+	
+	
 
 	/**
 	 * Updates information regarding the player who is the chancellor
-	 * @param chancellorValue 
-	 * @param card 
-	 * @param chancellorCards2 
+	 * @param chancellorValue Value of the chancellor
+	 * @param card Card selected by the chancellor
+	 * @param chancellorCards Cards received by the chancellor
 	 */
-	public void updateInformationOnChancellor(java.lang.String chancellorCards2, java.lang.String card, Double chancellorValue) {};
+	public void updateInformationOnChancellor(String chancellorCards, String card, Double chancellorValue) {};
 
 	/**
 	 * Updates information regarding the player who is the president
-	 * @param value 
-	 * @param card 
-	 * @param chancellorCards 
+	 * @param value Value of the president
+	 * @param card Card selected by the chancellor
+	 * @param chancellorCards Cards received by the chancellor
 	 */
 	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {};
 
@@ -366,14 +368,14 @@ public class Player extends Agent {
 	 * they have
 	 * @param presidentValue Percentage of the President belonging into the Player's faction
 	 * @param chancellorValue Percentage of the Chancellor belonging into the Player's faction
-	 * @return
+	 * @return true if voted yes, false if voted no
 	 */
 	public Boolean electionChoice(Double presidentValue, Double chancellorValue) {return null;};
 
 
 	/**
 	 * Registers information about the other players
-	 * @param msg
+	 * @param msg Message received
 	 */
 	public void register(ACLMessage msg) {}
 

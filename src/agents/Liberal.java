@@ -7,8 +7,15 @@ import java.util.Map.Entry;
 import jade.lang.acl.ACLMessage;
 import utilities.Utilities;
 
+/**
+ * Class that extends Player and represents a Liberal in the game
+ */
 public class Liberal extends Player{
 
+
+	public Liberal(int randomNum) {
+		this.personality = randomNum;
+	}
 
 	public void setup() {
 		super.setup();
@@ -83,17 +90,34 @@ public class Liberal extends Player{
 
 
 	public void updateInformationOnPresident(String chancellorCards, String card, Double value) {
-		if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
-			value+=10.0;
+		if (personality == 0) {			
 
-		else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
-			value-=3.0;
+			if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
+				value+=15.0;
 
-		else {
-			if (card.equals(Utilities.LIBERAL_CARD))
-				value+=20.0;
-			else
-				value-=10.0;			
+			else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
+				value+=6.0;
+
+			else {
+				if (card.equals(Utilities.LIBERAL_CARD))
+					value+=20.0;
+				else
+					value-=10.0;			
+			}
+		}
+		else if (personality == 1) { //suspicious
+			if(chancellorCards.indexOf(Utilities.FASCIST_CARD) == -1) // fascist with LLL or liberal with LLL/FLL
+				value+=10.0;
+
+			else if (chancellorCards.indexOf(Utilities.LIBERAL_CARD) == -1) //fascist with FFF/FFL or liberal with FFF
+				value-=2.0;
+
+			else {
+				if (card.equals(Utilities.LIBERAL_CARD))
+					value+=20.0;
+				else
+					value-=10.0;			
+			}
 		}
 		if (value < 0)
 			value = 0.0;
