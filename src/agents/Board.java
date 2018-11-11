@@ -29,7 +29,6 @@ public class Board extends Agent {
 	private int currentPresident = -1;
 	private int currentChancellor;
 	private int electionTracker = 0;
-	private boolean firstTurn = true;
 	private  AID[] players = new AID[Utilities.numberPlayers];
 	private String[] roles = new String[Utilities.numberPlayers];
 	private Queue<String> deck = new LinkedList<>();
@@ -90,7 +89,10 @@ public class Board extends Agent {
 				switch (Utilities.currentState) {
 				case Setup:
 					if(this.verifySetup(msg))
+					{
+						Utilities.shuffleArray(players,roles);
 						startGame();
+					}					
 					break;
 				case Delegation :
 					this.dealDelegation(msg);
@@ -250,13 +252,16 @@ public class Board extends Agent {
 	private void gameOver() {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setOntology(Utilities.GAME_OVER);
+		System.out.println("FASCIST POLICIES: "+ fascistPolicies );
+		System.out.println("LIBERAL POLICIES: " + liberalPolicies);
+		System.out.println("Current Chancelor: " + players[currentChancellor].getLocalName());
 		if (this.fascistPolicies == 6)
 			msg.setContent(Utilities.FASCISTS_WIN);
 		else if (this.liberalPolicies == 5)
 			msg.setContent(Utilities.LIBERALS_WIN);
 		else
 			msg.setContent(Utilities.HITLER_ELECTED);
-
+	
 		Utilities.currentState = State.GameOver;
 
 		for(int i = 0; i < players.length; i++) 
@@ -282,10 +287,6 @@ public class Board extends Agent {
 			sendPlayers();
 			doWait(150);
 			createCards();
-			if (firstTurn) {
-				Utilities.shuffleArray(players);
-				firstTurn = false;
-			}
 			System.out.println();
 			System.out.println("--------------New Turn--------------");
 			System.out.println();
@@ -328,7 +329,11 @@ public class Board extends Agent {
 		Election(String chancellor){
 			for (int i = 0; i < players.length; i++)
 				if (players[i].getLocalName().equals(chancellor)) 
+				{
 					currentChancellor = i;
+					break;
+				}
+					
 
 			ACLMessage msg = new ACLMessage(ACLMessage.PROPOSE);
 			msg.setContent(players[currentPresident].getLocalName() + "," + chancellor);
