@@ -17,7 +17,7 @@ O objetivo dos liberais é fazer passar cinco leis liberais ou assassinarem o Hi
 
 Cada vez que a eleição do Presidente e Chanceler for recusada, o Rastreador de Eleições avança uma vez. Se avançar três vezes seguidas, a carta do topo do baralho será a nova lei. O Rastreador volta para o início caso seja aprovada uma lei.
 
-![Board](https://raw.githubusercontent.com/LastLombax/AIAD-FEUP/master/Board.PNG?token=AYlAMTnGQTVt7Ov_STluj4lpgs0g9fpEks5bvcrywA%3D%3D "Tabuleiro")
+![Board](https://raw.githubusercontent.com/LastLombax/AIAD-FEUP/master/Board.PNG?token=AYlAMevu4sBBhoDwOUyy7u4RC0QqaoSWks5b9RvawA%3D%3D "Tabuleiro")
 
 ### Regras fascistas
 
@@ -59,18 +59,3 @@ O ambiente será simulado tendo em conta o número de agentes ativos
 
 O Agente que tiver o papel de Presidente terá de enviar as cartas que recebeu para o Chanceler.
 
-
-## Estratégias
-
-
-## Variáveis Dependentes
-
-## Variáveis Independentes
-
-
-# Feedback 
-
-Começar por fazer o tabuleiro(agente)
-IMplementar algumas regras
-Meter jogadores(agentes) simples e tentar ver flow do jogo
-Guardar informações num ficheiro txt
