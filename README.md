@@ -49,7 +49,7 @@ Cada jogador será um agente, que guardará informações sobre o conhecimento q
 
 ## Sistema Multi Agente
 
-Jade, SAJaS, Jadex BDI
+Jade
 
 ## Ambiente
 
@@ -59,3 +59,12 @@ O ambiente será simulado tendo em conta o número de agentes ativos
 
 O Agente que tiver o papel de Presidente terá de enviar as cartas que recebeu para o Chanceler.
 
+## TP1
+
+O objetivo do primeiro trabalho foi o desenvolvimento da lógica de jogo e o estabelecimento de comunicação inter-agente utilizando ACLMessages.
+
+## TP2
+
+No segundo trabalho, o objetivo é criar um modelo geral de cada agente, correndo dezenas de vezes o jogo. Ao guardar informações no fim de cada jogo, pode-se relacionar decisões feitas com a _membership_ a uma equipa. 
+
+Guarda-se dados sobre Hitler, Liberal e Fascista. Com um numero sucessivo de jogos, o modelo é criado e atualizado e eventualmente cada agente lê esse modelo e guarda.
