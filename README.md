@@ -43,28 +43,32 @@ O Presidente retira três leis, descarta uma e passa as duas restantes para o Ch
 Cada uso do Poder de Veto representa um governo inativo e avança o Rastreador de Eleições uma vez.
 
 
-## Agents
-
-Cada jogador será um agente, que guardará informações sobre o conhecimento que tem dos outros jogadores, como possível associação, cartas votadas, etc.
-
-## Sistema Multi Agente
-
-Jade
-
-## Ambiente
-
-O ambiente será simulado tendo em conta o número de agentes ativos
-
-## Interações 
-
-O Agente que tiver o papel de Presidente terá de enviar as cartas que recebeu para o Chanceler.
-
 ## TP1
 
 O objetivo do primeiro trabalho foi o desenvolvimento da lógica de jogo e o estabelecimento de comunicação inter-agente utilizando ACLMessages.
+
+### Agents
+
+Cada jogador será um agente, que guardará informações sobre o conhecimento que tem dos outros jogadores, como possível associação, cartas votadas, etc.
+
+### Sistema Multi Agente
+
+Jade
+
+### Ambiente
+
+O ambiente será simulado tendo em conta o número de agentes ativos
+
+### Interações 
+
+O Agente que tiver o papel de Presidente terá de enviar as cartas que recebeu para o Chanceler.
 
 ## TP2
 
 No segundo trabalho, o objetivo é criar um modelo geral de cada agente, correndo dezenas de vezes o jogo. Ao guardar informações no fim de cada jogo, pode-se relacionar decisões feitas com a _membership_ a uma equipa. 
 
 Guarda-se dados sobre Hitler, Liberal e Fascista. Com um numero sucessivo de jogos, o modelo é criado e atualizado e eventualmente cada agente lê esse modelo e guarda.
+
+Em cada jogada, cada jogador guarda um histórico dos outros jogadores(neste caso, para o presidente e para o chanceller). 
+* Para um jogador K, o jogador guarda o que foi para o chanceller quando o K foi presidente e o mesmo para quando foi chanceller e guarda no fim do jogo se era fascista ou liberal.
+* Fazendo isto em imensas partidas, o modelo vai sendo criado e este é usado nos jogadores em efeitos de eleição para decidir se vota sim ou não
