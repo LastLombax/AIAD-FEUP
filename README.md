@@ -72,3 +72,11 @@ Guarda-se dados sobre Hitler, Liberal e Fascista. Com um numero sucessivo de jog
 Em cada jogada, cada jogador guarda um histórico dos outros jogadores(neste caso, para o presidente e para o chanceller). 
 * Para um jogador K, o jogador guarda o que foi para o chanceller quando o K foi presidente e o mesmo para quando foi chanceller e guarda no fim do jogo se era fascista ou liberal.
 * Fazendo isto em imensas partidas, o modelo vai sendo criado e este é usado nos jogadores em efeitos de eleição para decidir se vota sim ou não
+
+### Variáveis dependentes
+
+São o que queremos prever. Como queremos usar o modelo para aprovar ou recusar uma eleição, a variável dependente consistirá se um jogador K, para um jogador Liberal, é liberal e, para um jogador Hitler, se é fascista.
+
+### Variáveis independentes
+
+São utilizadas para obter a dependente. Estas são as cartas que um jogador K passou para o chanceller, como Presidente, ou a carta que ele escolheu tendo em conta as cartas que recebeu, como Chanceller.
