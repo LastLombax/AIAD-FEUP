@@ -65,17 +65,28 @@ O Agente que tiver o papel de Presidente terá de enviar as cartas que recebeu p
 
 ## TP2
 
-No segundo trabalho, o objetivo é criar um modelo geral de cada agente, correndo dezenas de vezes o jogo. Ao guardar informações no fim de cada jogo, pode-se relacionar decisões feitas com a _membership_ a uma equipa. 
+### Sumário do problema
 
-Guarda-se dados sobre Hitler, Liberal e Fascista. Com um numero sucessivo de jogos, o modelo é criado e atualizado e eventualmente cada agente lê esse modelo e guarda.
+Cada jogador é aleatoriamente nomeado para ser um liberal ou um fascista e um jogador será o Hitler. Os fascistas, que se conhecem uns aos outros, têm de se coordenar para causar a desconfiança entre os outros jogadores e para eleger o Hitler como Chanceler mais tarde; os liberais, ao contrário dos fascistas, não se conhecem(e consequentemente não sabem quem são os fascistas) e precisam de encontrar e impedir o Hitler. A equipa dos liberais é sempre composta pela maioria dos jogadores. O Hitler, tal como os liberais, não sabe quem é quem.
 
-Em cada jogada, cada jogador guarda um histórico dos outros jogadores(neste caso, para o presidente e para o chanceller). 
-* Para um jogador K, o jogador guarda o que foi para o chanceller quando o K foi presidente e o mesmo para quando foi chanceller e guarda no fim do jogo se era fascista ou liberal.
-* Fazendo isto em imensas partidas, o modelo vai sendo criado e este é usado nos jogadores em efeitos de eleição para decidir se vota sim ou não
+Em cada ronda, o Presidente selecionado escolhe um Chanceler e, após serem aprovados por todos os jogadores, terão de eleger uma lei. São retiradas três cartas do baralho e o Presidente descarta uma, passando as restantes para o Chanceler, que faz a escolha final. 
+
+O objetivo dos liberais é fazer passar cinco leis liberais. O objetivo dos fascistas é passar seis politicas fascistas ou eleger o Hitler como Chanceler após três leis fascistas terem sido aprovadas.
+
+Cada vez que a eleição do Presidente e Chanceler for recusada, o Rastreador de Eleições avança uma vez. Se avançar três vezes seguidas, a carta do topo do baralho será a nova lei. O Rastreador volta para o início caso seja aprovada uma lei.
+
+### Definição do problema de análise de dados preditiva a resolver
+
+O objetivo é criar um modelo geral de cada agente, correndo dezenas de vezes o jogo. Ao guardar informações no fim de cada jogo, pode-se relacionar decisões feitas com a pertença a uma equipa. 
+
+Em cada jogada, cada jogador guardará um histórico dos outros jogadores(neste caso, para o presidente e para o chanceller):
+* Para um jogador K e um jogador Y, o jogador Y guarda o que foi para o chanceller quando o K foi presidente e faz o mesmo para quando o K foi chanceller, guardando no fim do jogo se foi fascista ou liberal.
+* Fazendo estes passos em várias partidas, o modelo vai sendo criado e atualizado, sendo este utilizado nos jogadores em efeitos de eleição para decidir se irá votar sim ou não.
+
 
 ### Variáveis dependentes
 
-São o que queremos prever. Como queremos usar o modelo para aprovar ou recusar uma eleição, a variável dependente consistirá se um jogador K, para um jogador Liberal, é liberal e, para um jogador Hitler, se é fascista.
+As variáveis dependentes são as variáveis que queremos que o jogador preveja. Como queremos usar o modelo para aprovar ou recusar uma eleição, a variável dependente consistirá na pertença de um jogador K ser de uma equipa, ou seja, ser fascista ou liberal.
 
 ### Variáveis independentes
 
