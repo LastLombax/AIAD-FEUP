@@ -1,5 +1,6 @@
 package agents;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
@@ -12,6 +13,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
+import utilities.CSV;
 import utilities.Utilities;
 
 /**
@@ -34,12 +36,19 @@ public class Player extends Agent {
 	
 	int personality;
 	
+	CSV csv;
+	
 
 	/**
 	 * (non-Javadoc)
 	 * @see jade.core.Agent#setup()
 	 */
 	public void setup() {
+		try {
+			csv = new CSV(this.getAID().getLocalName());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		this.doWait(250);
 		addBehaviour(new sendBoardReady());
 		addBehaviour(new MessageFromBoard());
@@ -91,6 +100,8 @@ public class Player extends Agent {
 				else if(msg.getOntology().equals(Utilities.NEW_POLICY_ELECTION)) 
 					enterNextTurn();
 				else if(msg.getOntology().equals(Utilities.GAME_OVER)) {
+					csv.saveDelegacy(president, chancellor);
+					csv.closeFile();
 					System.out.println(getAID().getLocalName() + ": " +  msg.getContent());
 					doDelete();
 				}
@@ -149,10 +160,19 @@ public class Player extends Agent {
 		String[] msgContent = content.split(","); 
 		String chancellorCards = msgContent[0];
 		String card = msgContent[1];
+		
+		saveInformationForModel(chancellorCards, card);
 
 		updateInformation(chancellorCards, card);
 
 	}
+
+	private void saveInformationForModel(String chancellorCards, String card) {
+		
+		String[] information = {president, chancellorCards, chancellor, card};
+		csv.write(information);				
+	}
+
 
 	/**
 	 * Sends the policy chosen by the Chancellor to the board

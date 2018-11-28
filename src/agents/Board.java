@@ -250,6 +250,8 @@ public class Board extends Agent {
 	 * who won
 	 */
 	private void gameOver() {
+		informPlayersOfDelegacy();
+		this.doWait(100);
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setOntology(Utilities.GAME_OVER);
 		System.out.println("FASCIST POLICIES: "+ fascistPolicies );
