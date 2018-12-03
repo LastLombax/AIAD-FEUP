@@ -246,12 +246,19 @@ public class Board extends Agent {
 
 	/**
 	 * Sends a message to all players
-	 * informing that the game is over and 
-	 * who won
+	 * informing that the game is over
 	 */
 	private void gameOver() {
 		informPlayersOfDelegacy();
-		this.doWait(100);
+		informPlayersofWhoWon();
+		informPlayersOfMemberships();
+		doDelete();
+	}
+	
+	/**
+	 * Informs the players with who won the game
+	 */
+	public void informPlayersofWhoWon() {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
 		msg.setOntology(Utilities.GAME_OVER);
 		System.out.println("FASCIST POLICIES: "+ fascistPolicies );
@@ -270,7 +277,21 @@ public class Board extends Agent {
 			msg.addReceiver(players[i]);
 
 		send(msg);
-		doDelete();
+	}
+	
+	public void informPlayersOfMemberships(){
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.setOntology(Utilities.GAME_OVER_INFO);
+		String memberships = "";
+		for(int i = 0; i < players.length; i++) 
+			memberships+= players[i].getLocalName() + ":" + roles[i] + ";";
+			
+		msg.setContent(memberships);
+
+		for(int i = 0; i < players.length; i++) 
+			msg.addReceiver(players[i]);
+
+		send(msg);
 	}
 	
 	/**
@@ -525,6 +546,7 @@ public class Board extends Agent {
 			deck.add(cards[i]);
 		}
 	}
+	
 
 	/**
 	 * Adds the Board Agent to the DF

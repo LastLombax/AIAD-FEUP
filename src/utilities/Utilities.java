@@ -44,6 +44,8 @@ public class Utilities {
 	public static String SELECTED_POLICY = "SelectedPolicy";
 	public static String NEXT_TURN = "NextTurn";
 	public static String GAME_OVER = "GameOver";
+	public static String GAME_OVER_INFO = "GameOverInfo";
+
 	
 	public static String LIBERAL_CARD = "L";
 	public static String FASCIST_CARD = "F";

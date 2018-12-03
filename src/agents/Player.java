@@ -1,6 +1,7 @@
 package agents;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
@@ -37,6 +38,8 @@ public class Player extends Agent {
 	int personality;
 	
 	CSV csv;
+	
+	String winner;
 	
 
 	/**
@@ -100,9 +103,23 @@ public class Player extends Agent {
 				else if(msg.getOntology().equals(Utilities.NEW_POLICY_ELECTION)) 
 					enterNextTurn();
 				else if(msg.getOntology().equals(Utilities.GAME_OVER)) {
-					csv.saveDelegacy(president, chancellor);
-					csv.closeFile();
 					System.out.println(getAID().getLocalName() + ": " +  msg.getContent());
+					if (msg.getContent().equals(Utilities.FASCISTS_WIN))
+						winner = "fascists";
+					else if (msg.getContent().equals(Utilities.LIBERALS_WIN))
+						winner = "liberals";
+					else if (msg.getContent().equals(Utilities.HITLER_ELECTED))
+						winner = "hitler";
+				}
+				else if(msg.getOntology().equals(Utilities.GAME_OVER_INFO)) {
+					//csv.saveDelegacy(president, chancellor);
+					try {
+						csv.writeMembership(msg.getContent());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					csv.closeFile();
 					doDelete();
 				}
 			} else {
