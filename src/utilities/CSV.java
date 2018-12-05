@@ -7,9 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CSV {
 	PrintWriter pw;
@@ -21,24 +18,18 @@ public class CSV {
 		filePath = System.getProperty("user.dir") + "\\data\\" + name + ".csv";
 		f = new File(filePath);
 		pw = new PrintWriter(f);
-
 		sb = new StringBuilder();
-		String ColumnNamesList = "President,Cards2Chanceller,Chanceller,ChancellerCard,Team";
+		String ColumnNamesList = "Turno,ÈChanceller,TimesChanceller,FascistRatio,CartaEscolhida,Team";
 		sb.append(ColumnNamesList + "\n");
 		pw.write(sb.toString());
 
 	}
 
-	public void write(String[] information) {
+	public void write(String information) {
 		sb = new StringBuilder();
-		for (String s : information) {
-			sb.append(s);
-			sb.append(",");
-		}
-		sb.delete(sb.length()-1, sb.length()-1);
+		sb.append(information);
 		sb.append("\n");
 		pw.write(sb.toString());
-
 	}
 
 	public void writeMembership(String content) throws IOException {
@@ -62,6 +53,7 @@ public class CSV {
 		String [] aux2 = aux[0].split(":");
 		String [] aux3 = aux2[0].split("_");
 		roles[Integer.parseInt(aux3[1])] = aux2[1];
+		/*
 
 		BufferedReader reader;
 		try {
@@ -78,7 +70,7 @@ public class CSV {
 			e.printStackTrace();
 		}
 		pw = new PrintWriter(new FileOutputStream(filePath, false));
-		pw.write(sb.toString());
+		pw.write(sb.toString());*/
 	}
 
 	public void closeFile() {

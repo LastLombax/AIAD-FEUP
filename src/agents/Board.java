@@ -251,7 +251,6 @@ public class Board extends Agent {
 	private void gameOver() {
 		informPlayersOfDelegacy();
 		informPlayersofWhoWon();
-		informPlayersOfMemberships();
 		doDelete();
 	}
 	
@@ -281,7 +280,7 @@ public class Board extends Agent {
 	
 	public void informPlayersOfMemberships(){
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.setOntology(Utilities.GAME_OVER_INFO);
+		msg.setOntology(Utilities.TEAMS_INFO);
 		String memberships = "";
 		for(int i = 0; i < players.length; i++) 
 			memberships+= players[i].getLocalName() + ":" + roles[i] + ";";
@@ -307,6 +306,8 @@ public class Board extends Agent {
 	class startGame extends OneShotBehaviour{
 		@Override
 		public void action() {
+			Utilities.currentState = State.TeamsInfo;
+			informPlayersOfMemberships();
 			sendPlayers();
 			doWait(150);
 			createCards();
@@ -334,6 +335,11 @@ public class Board extends Agent {
 		fascists = fascists.substring(0, fascists.length() - 1);
 		msg.setContent(fascists);
 		send(msg);	
+	}
+
+	public void sendRolesToPlayer() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

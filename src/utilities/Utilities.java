@@ -18,7 +18,7 @@ public class Utilities {
 	 * Enum that represents the state/phase of the game
 	 */
 	public enum State {
-		Setup, Delegation, Election, ForcedPolicySelection, PolicySelection, GameOver;
+		Setup, TeamsInfo, Delegation, Election, ForcedPolicySelection, PolicySelection, GameOver;
 	}	
 	
 	public static State currentState = State.Setup;
@@ -29,6 +29,7 @@ public class Utilities {
 	public static String READY = "READY";
 	
 	//Ontologies
+	public static String TEAMS_INFO= "TeamsInfo";
 	public static String REGISTER= "Register";
 	public static String PRESIDENT = "President";
 	public static String DELEGACY = "Delegacy";
@@ -44,7 +45,6 @@ public class Utilities {
 	public static String SELECTED_POLICY = "SelectedPolicy";
 	public static String NEXT_TURN = "NextTurn";
 	public static String GAME_OVER = "GameOver";
-	public static String GAME_OVER_INFO = "GameOverInfo";
 
 	
 	public static String LIBERAL_CARD = "L";

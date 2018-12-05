@@ -3,6 +3,7 @@ package agents;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 import jade.core.AID;
@@ -30,23 +31,44 @@ public class Player extends Agent {
 	AID board;
 
 	String president, chancellor;
-	
+
 	protected String type = null;
 
 	int index = 0;
-	
+
 	int personality;
-	
+
 	CSV csv;
-	
+
 	String winner;
-	
+
+	int turn = 1;
+
+	class Information{
+		double fascistRatio = 0.0;
+		int chancellerTimes = 0;
+		boolean isChanceller = false;
+		String chosenCard = "";
+		String team = "";
+
+		void clean() {
+			fascistRatio = 0;
+			isChanceller = false;
+			chosenCard = "";
+		}
+	}
+
+	ConcurrentHashMap<String, Information> playersInfo = new ConcurrentHashMap<String, Information>(); // double is the probability of being of the same faction
 
 	/**
 	 * (non-Javadoc)
 	 * @see jade.core.Agent#setup()
 	 */
 	public void setup() {
+		for (int i = 0; i < Utilities.numberPlayers; i++) {
+			Information info = new Information();
+			playersInfo.put("Player_" + i, info);
+		}
 		try {
 			csv = new CSV(this.getAID().getLocalName());
 		} catch (FileNotFoundException e) {
@@ -66,7 +88,10 @@ public class Player extends Agent {
 		public void action() {
 			ACLMessage msg = receive();
 			if(msg != null) {
-				if(msg.getOntology().equals(Utilities.REGISTER)) {
+				if(msg.getOntology().equals(Utilities.TEAMS_INFO)) {
+					saveRoles(msg.getContent());
+				}
+				else if(msg.getOntology().equals(Utilities.REGISTER)) {
 					register(msg);
 				}
 				else if(msg.getOntology().equals(Utilities.PRESIDENT)) {
@@ -110,15 +135,6 @@ public class Player extends Agent {
 						winner = "liberals";
 					else if (msg.getContent().equals(Utilities.HITLER_ELECTED))
 						winner = "hitler";
-				}
-				else if(msg.getOntology().equals(Utilities.GAME_OVER_INFO)) {
-					//csv.saveDelegacy(president, chancellor);
-					try {
-						csv.writeMembership(msg.getContent());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 					csv.closeFile();
 					doDelete();
 				}
@@ -127,7 +143,7 @@ public class Player extends Agent {
 			}
 
 		}
-		
+
 	}
 
 	/**
@@ -150,10 +166,43 @@ public class Player extends Agent {
 	 * Sends board a message to enter next turn
 	 */
 	public void enterNextTurn() {
+		turn++;
 		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(board);
 		msg.setOntology(Utilities.NEXT_TURN);
 		send(msg);
+	}
+
+
+	public void saveRoles(String content) {
+		String [] roles = new String[7];
+
+		for (int i = 0; i < 3; i++) {
+			String [] aux = content.split(";");
+			String [] aux2 = aux[0].split(":");
+			String [] aux3 = aux2[0].split("_");
+			roles[Integer.parseInt(aux3[1])] = aux2[1];
+
+			String [] aux4 = aux[1].split(":");
+			String [] aux5 = aux4[0].split("_");
+			roles[Integer.parseInt(aux5[1])] = aux4[1];
+			content = content.replace(aux[0] + ";" + aux[1] + ";", "");
+		}
+
+		String [] aux = content.split(";");
+		String [] aux2 = aux[0].split(":");
+		String [] aux3 = aux2[0].split("_");
+		roles[Integer.parseInt(aux3[1])] = aux2[1];
+
+
+		for (Map.Entry<String, Information> entry : playersInfo.entrySet())
+		{	
+			for (int i = 0; i < 7; i++)
+				if (entry.getKey().equals("Player_" + i)) {
+					entry.getValue().team = roles[i];
+				}
+		}
+
 	}
 
 
@@ -165,6 +214,9 @@ public class Player extends Agent {
 		String[] msgContent = delegacy.split(","); 
 		president = msgContent[0];
 		chancellor = msgContent[1];
+
+		playersInfo.get(chancellor).chancellerTimes++;
+		playersInfo.get(chancellor).isChanceller=true;
 	}
 
 
@@ -177,7 +229,7 @@ public class Player extends Agent {
 		String[] msgContent = content.split(","); 
 		String chancellorCards = msgContent[0];
 		String card = msgContent[1];
-		
+
 		saveInformationForModel(chancellorCards, card);
 
 		updateInformation(chancellorCards, card);
@@ -185,9 +237,36 @@ public class Player extends Agent {
 	}
 
 	private void saveInformationForModel(String chancellorCards, String card) {
-		
-		String[] information = {president, chancellorCards, chancellor, card};
-		csv.write(information);				
+
+		//"Turno,éChanceller,#Chanceller,%Fr,CartaEscolhida,Team";
+		for (Map.Entry<String, Information> entry : playersInfo.entrySet())
+		{	
+			Information value = entry.getValue();
+			if (value.isChanceller) {
+				String line = chancellorCards;
+				int count = line.length() - line.replace("F", "").length();
+				value.fascistRatio = (double)count/ (double)chancellorCards.length(); 
+				value.chosenCard=card;
+			}
+			else {
+				value.fascistRatio = -1;
+				value.chosenCard="n/a";
+			}
+
+			String information = turn + ","
+					+ value.isChanceller + ","
+					+ value.chancellerTimes + ",";
+			if (value.fascistRatio == -1)
+				information+= "n/a" + ",";
+			else
+				information+= Double.toString(value.fascistRatio) + ",";
+
+			information+= value.chosenCard + "," + value.team;
+
+			csv.write(information);		
+			value.clean();
+		}
+
 	}
 
 
@@ -235,7 +314,7 @@ public class Player extends Agent {
 		send(msg);
 
 	}
-	
+
 
 	/**
 	 * Sends cards for the chancellor to choose from
@@ -288,6 +367,8 @@ public class Player extends Agent {
 	 * @return Card that is the new policy
 	 */
 	public String selectCardToPass(String cards) { 
+
+
 		if(cards.indexOf(Utilities.FASCIST_CARD) == -1 || cards.indexOf(Utilities.LIBERAL_CARD) == -1) {
 			cards = cards.substring(1);
 		}
@@ -311,7 +392,7 @@ public class Player extends Agent {
 		msg.addReceiver(board);
 		msg.setOntology(ontology);
 		send(msg);
-		
+
 		ACLMessage answer = null;
 		while(answer == null) {
 			answer = receive();
@@ -324,7 +405,7 @@ public class Player extends Agent {
 		}
 		return -1;
 	}
-	
+
 
 
 
@@ -352,10 +433,10 @@ public class Player extends Agent {
 	 * @param card Card that was chosen by the chancellor
 	 */
 	public void updateInformation(String chancellorCards, String card) {
-		
+
 		Double presidentValue = map.get(president);
 		Double chancellorValue = map.get(chancellor);
-		
+
 		if (presidentValue < 65.0 && !president.equals(this.getAID().getLocalName())) 
 			updateInformationOnPresident(chancellorCards, card, presidentValue);
 
@@ -363,7 +444,7 @@ public class Player extends Agent {
 			updateInformationOnChancellor(chancellorCards, card, chancellorValue);
 
 	}
-	
+
 
 	/**
 	 * Returns type of player
@@ -380,8 +461,8 @@ public class Player extends Agent {
 	public ConcurrentHashMap<String, Double> getMap(){
 		return map;
 	}
-	
-	
+
+
 
 	/**
 	 * Updates information regarding the player who is the chancellor
@@ -421,7 +502,7 @@ public class Player extends Agent {
 	 * @return Returns the chosen chancellor
 	 */
 	public String chooseChancellor() {return null;};
-	
+
 
 	/**
 	 * Selects a card to be discarded by the President
