@@ -2,10 +2,12 @@ package utilities;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 public class CSV {
-	PrintWriter pw;
+	FileWriter pw;
 	StringBuilder sb;
 	File f;
 
@@ -13,11 +15,19 @@ public class CSV {
 	public CSV(String name) throws FileNotFoundException {
 		filePath = System.getProperty("user.dir") + "\\data\\" + name + ".csv";
 		f = new File(filePath);
-		pw = new PrintWriter(f);
-		sb = new StringBuilder();
-		String ColumnNamesList = "Turno,éChanceller,TimesChanceller,FascistRatio,CartaEscolhida,Team";
-		sb.append(ColumnNamesList + "\n");
-		pw.write(sb.toString());
+		try {
+			sb = new StringBuilder();
+			if(!f.exists()) {
+				String ColumnNamesList = "Turno,ï¿½Chanceller,TimesChanceller,FascistRatio,CartaEscolhida,Team";
+				sb.append(ColumnNamesList + "\n");
+			}
+			pw = new FileWriter(f,true);
+			pw.write(sb.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 
 	}
 
@@ -25,11 +35,21 @@ public class CSV {
 		sb = new StringBuilder();
 		sb.append(information);
 		sb.append("\n");
-		pw.write(sb.toString());
+		try {
+			pw.write(sb.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void closeFile() {
-		pw.close();
+		try {
+			pw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
